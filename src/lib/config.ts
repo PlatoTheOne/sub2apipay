@@ -81,11 +81,11 @@ function pickRequired(raw: RawEnv, key: keyof RawEnv, fallbackKey: keyof RawEnv)
   if (!value) {
     throw new Error(`Missing required env: ${String(key)} (fallback: ${String(fallbackKey)})`);
   }
-  return value;
+  return value as string;
 }
 
 function pickOptional(raw: RawEnv, key: keyof RawEnv, fallbackKey: keyof RawEnv): string | undefined {
-  return raw[key] ?? raw[fallbackKey] ?? undefined;
+  return (raw[key] ?? raw[fallbackKey] ?? undefined) as string | undefined;
 }
 
 let cachedEnv: Env | null = null;
