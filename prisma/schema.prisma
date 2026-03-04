@@ -46,6 +46,7 @@ model Order {
   @@index([status])
   @@index([expiresAt])
   @@index([createdAt])
+  @@index([paidAt])
   @@map("orders")
 }
 
