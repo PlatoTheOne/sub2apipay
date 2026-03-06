@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import fs from 'fs';
 
 const optionalTrimmedString = z.preprocess((value) => {
   if (typeof value !== 'string') return value;
@@ -34,6 +35,7 @@ const envSchema = z.object({
   EASY_PAY_CID_WXPAY: optionalTrimmedString,
 
   // ── 支付宝直连（PAYMENT_PROVIDERS 含 alipay 时必填） ──
+  // 支持直接传密钥内容，也支持传文件路径（自动读取）
   ALIPAY_APP_ID: optionalTrimmedString,
   ALIPAY_PRIVATE_KEY: optionalTrimmedString,
   ALIPAY_PUBLIC_KEY: optionalTrimmedString,
@@ -88,6 +90,23 @@ export type Env = z.infer<typeof envSchema>;
 
 let cachedEnv: Env | null = null;
 
+/**
+ * 如果值看起来是文件路径且文件存在，则读取文件内容作为实际值；
+ * 否则直接返回原值。
+ */
+function resolveKeyValue(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  // 密钥内容不会以 / 或盘符开头，文件路径才会
+  if ((value.startsWith('/') || /^[A-Za-z]:[/\\]/.test(value)) && fs.existsSync(value)) {
+    try {
+      return fs.readFileSync(value, 'utf-8').trim();
+    } catch (err) {
+      throw new Error(`Failed to read key file ${value}: ${(err as Error).message}`);
+    }
+  }
+  return value;
+}
+
 export function getEnv(): Env {
   if (cachedEnv) return cachedEnv;
 
@@ -97,6 +116,12 @@ export function getEnv(): Env {
     throw new Error('Invalid environment variables');
   }
 
-  cachedEnv = parsed.data;
+  const env = parsed.data;
+
+  // 支付宝密钥：支持直接传内容或传文件路径
+  env.ALIPAY_PRIVATE_KEY = resolveKeyValue(env.ALIPAY_PRIVATE_KEY);
+  env.ALIPAY_PUBLIC_KEY = resolveKeyValue(env.ALIPAY_PUBLIC_KEY);
+
+  cachedEnv = env;
   return cachedEnv;
 }
