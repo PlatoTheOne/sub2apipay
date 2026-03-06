@@ -22,27 +22,36 @@ export class AlipayProvider implements PaymentProvider {
   };
 
   async createPayment(request: CreatePaymentRequest): Promise<CreatePaymentResponse> {
-    const method = request.isMobile ? 'alipay.trade.wap.pay' : 'alipay.trade.page.pay';
-    const productCode = request.isMobile ? 'QUICK_WAP_WAY' : 'FAST_INSTANT_TRADE_PAY';
-
-    const url = pageExecute(
-      {
-        out_trade_no: request.orderId,
-        product_code: productCode,
-        total_amount: request.amount.toFixed(2),
-        subject: request.subject,
-      },
-      {
-        notifyUrl: request.notifyUrl,
-        returnUrl: request.returnUrl,
-        method,
-      },
-    );
-
-    return {
-      tradeNo: request.orderId,
-      payUrl: url,
+    const buildPayUrl = (mobile: boolean) => {
+      const method = mobile ? 'alipay.trade.wap.pay' : 'alipay.trade.page.pay';
+      const productCode = mobile ? 'QUICK_WAP_WAY' : 'FAST_INSTANT_TRADE_PAY';
+      return pageExecute(
+        {
+          out_trade_no: request.orderId,
+          product_code: productCode,
+          total_amount: request.amount.toFixed(2),
+          subject: request.subject,
+        },
+        {
+          notifyUrl: request.notifyUrl,
+          returnUrl: request.returnUrl,
+          method,
+        },
+      );
     };
+
+    let url: string;
+    if (request.isMobile) {
+      try {
+        url = buildPayUrl(true);
+      } catch {
+        url = buildPayUrl(false);
+      }
+    } else {
+      url = buildPayUrl(false);
+    }
+
+    return { tradeNo: request.orderId, payUrl: url };
   }
 
   async queryOrder(tradeNo: string): Promise<QueryOrderResponse> {
