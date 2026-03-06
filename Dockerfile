@@ -11,7 +11,13 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm prisma generate
-RUN pnpm build
+# 构建时注入 dummy 环境变量，避免 Next.js 预渲染 API 路由时 getEnv() 报错
+RUN DATABASE_URL="postgresql://x:x@localhost/x" \
+    SUB2API_BASE_URL="https://localhost" \
+    SUB2API_ADMIN_API_KEY="build-dummy" \
+    ADMIN_TOKEN="build-dummy" \
+    NEXT_PUBLIC_APP_URL="https://localhost" \
+    pnpm build
 
 FROM node:22-alpine AS runner
 WORKDIR /app
