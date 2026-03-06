@@ -1,6 +1,6 @@
 import WxPay from 'wechatpay-node-v3';
 import { getEnv } from '@/lib/config';
-import type { WxpayNativeOrderParams, WxpayH5OrderParams, WxpayRefundParams } from './types';
+import type { WxpayPcOrderParams, WxpayH5OrderParams, WxpayRefundParams } from './types';
 
 const BASE_URL = 'https://api.mch.weixin.qq.com';
 
@@ -76,7 +76,8 @@ async function request<T>(method: string, url: string, body?: Record<string, unk
   return data as T;
 }
 
-export async function createNativeOrder(params: WxpayNativeOrderParams): Promise<string> {
+/** PC 扫码支付（微信官方 API: /v3/pay/transactions/native） */
+export async function createPcOrder(params: WxpayPcOrderParams): Promise<string> {
   const env = assertWxpayEnv(getEnv());
   const result = await request<{ code_url: string }>('POST', '/v3/pay/transactions/native', {
     appid: env.WXPAY_APP_ID,

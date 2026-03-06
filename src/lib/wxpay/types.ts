@@ -1,4 +1,4 @@
-export interface WxpayNativeOrderParams {
+export interface WxpayPcOrderParams {
   out_trade_no: string;
   description: string;
   notify_url: string;

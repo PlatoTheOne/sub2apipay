@@ -9,7 +9,7 @@ import type {
   RefundResponse,
 } from '@/lib/payment/types';
 import {
-  createNativeOrder,
+  createPcOrder,
   createH5Order,
   queryOrder,
   closeOrder,
@@ -49,7 +49,7 @@ export class WxpayProvider implements PaymentProvider {
       return { tradeNo: request.orderId, payUrl: h5Url };
     }
 
-    const codeUrl = await createNativeOrder({
+    const codeUrl = await createPcOrder({
       out_trade_no: request.orderId,
       description: request.subject,
       notify_url: notifyUrl,
