@@ -68,19 +68,7 @@ export default function OrderTable({ isDark, loading, error, orders }: OrderTabl
                 <div className="font-medium">#{order.id.slice(0, 12)}</div>
                 <div className="font-semibold">¥{order.amount.toFixed(2)}</div>
                 <div>
-                  {(() => {
-                    const { channel, provider } = getPaymentDisplayInfo(order.paymentType);
-                    return (
-                      <>
-                        <span>{channel}</span>
-                        {provider && (
-                          <span className={['ml-1 text-xs', isDark ? 'text-slate-400' : 'text-slate-500'].join(' ')}>
-                            {provider}
-                          </span>
-                        )}
-                      </>
-                    );
-                  })()}
+                  {getPaymentDisplayInfo(order.paymentType).channel}
                 </div>
                 <div>
                   <span
