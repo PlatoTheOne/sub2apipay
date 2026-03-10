@@ -85,7 +85,9 @@ export default function DailyChart({ data, dark, locale = 'zh' }: DailyChartProp
         <h3 className={['mb-4 text-sm font-semibold', dark ? 'text-slate-200' : 'text-slate-800'].join(' ')}>
           {chartTitle}
         </h3>
-        <p className={['text-center text-sm py-16', dark ? 'text-slate-500' : 'text-gray-400'].join(' ')}>{emptyText}</p>
+        <p className={['text-center text-sm py-16', dark ? 'text-slate-500' : 'text-gray-400'].join(' ')}>
+          {emptyText}
+        </p>
       </div>
     );
   }
@@ -121,7 +123,11 @@ export default function DailyChart({ data, dark, locale = 'zh' }: DailyChartProp
             tickLine={false}
             width={60}
           />
-          <Tooltip content={<CustomTooltip dark={dark} currency={currency} amountLabel={amountLabel} countLabel={countLabel} />} />
+          <Tooltip
+            content={
+              <CustomTooltip dark={dark} currency={currency} amountLabel={amountLabel} countLabel={countLabel} />
+            }
+          />
           <Line
             type="monotone"
             dataKey="amount"

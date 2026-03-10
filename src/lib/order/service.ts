@@ -62,7 +62,11 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
   if (pendingCount >= MAX_PENDING_ORDERS) {
     throw new OrderError(
       'TOO_MANY_PENDING',
-      message(locale, `待支付订单过多（最多 ${MAX_PENDING_ORDERS} 笔）`, `Too many pending orders (${MAX_PENDING_ORDERS})`),
+      message(
+        locale,
+        `待支付订单过多（最多 ${MAX_PENDING_ORDERS} 笔）`,
+        `Too many pending orders (${MAX_PENDING_ORDERS})`,
+      ),
       429,
     );
   }
@@ -228,13 +232,21 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
     if (msg.includes('environment variables') || msg.includes('not configured') || msg.includes('not found')) {
       throw new OrderError(
         'PAYMENT_GATEWAY_ERROR',
-        message(locale, `支付渠道（${input.paymentType}）暂未配置，请联系管理员`, `Payment method (${input.paymentType}) is not configured. Please contact the administrator`),
+        message(
+          locale,
+          `支付渠道（${input.paymentType}）暂未配置，请联系管理员`,
+          `Payment method (${input.paymentType}) is not configured. Please contact the administrator`,
+        ),
         503,
       );
     }
     throw new OrderError(
       'PAYMENT_GATEWAY_ERROR',
-      message(locale, '支付渠道暂时不可用，请稍后重试或更换支付方式', 'Payment method is temporarily unavailable. Please try again later or use another payment method'),
+      message(
+        locale,
+        '支付渠道暂时不可用，请稍后重试或更换支付方式',
+        'Payment method is temporarily unavailable. Please try again later or use another payment method',
+      ),
       502,
     );
   }
@@ -413,10 +425,7 @@ export async function confirmPayment(input: {
   const result = await prisma.order.updateMany({
     where: {
       id: order.id,
-      OR: [
-        { status: ORDER_STATUS.PENDING },
-        { status: ORDER_STATUS.EXPIRED, updatedAt: { gte: graceDeadline } },
-      ],
+      OR: [{ status: ORDER_STATUS.PENDING }, { status: ORDER_STATUS.EXPIRED, updatedAt: { gte: graceDeadline } }],
     },
     data: {
       status: ORDER_STATUS.PAID,
@@ -574,11 +583,19 @@ export async function executeRecharge(orderId: string): Promise<void> {
 
 function assertRetryAllowed(order: { status: string; paidAt: Date | null }, locale: Locale): void {
   if (!order.paidAt) {
-    throw new OrderError('INVALID_STATUS', message(locale, '订单未支付，不允许重试', 'Order is not paid, retry denied'), 400);
+    throw new OrderError(
+      'INVALID_STATUS',
+      message(locale, '订单未支付，不允许重试', 'Order is not paid, retry denied'),
+      400,
+    );
   }
 
   if (isRefundStatus(order.status)) {
-    throw new OrderError('INVALID_STATUS', message(locale, '退款相关订单不允许重试', 'Refund-related order cannot retry'), 400);
+    throw new OrderError(
+      'INVALID_STATUS',
+      message(locale, '退款相关订单不允许重试', 'Refund-related order cannot retry'),
+      400,
+    );
   }
 
   if (order.status === ORDER_STATUS.FAILED || order.status === ORDER_STATUS.PAID) {
@@ -586,14 +603,22 @@ function assertRetryAllowed(order: { status: string; paidAt: Date | null }, loca
   }
 
   if (order.status === ORDER_STATUS.RECHARGING) {
-    throw new OrderError('CONFLICT', message(locale, '订单正在充值中，请稍后重试', 'Order is recharging, retry later'), 409);
+    throw new OrderError(
+      'CONFLICT',
+      message(locale, '订单正在充值中，请稍后重试', 'Order is recharging, retry later'),
+      409,
+    );
   }
 
   if (order.status === ORDER_STATUS.COMPLETED) {
     throw new OrderError('INVALID_STATUS', message(locale, '订单已完成', 'Order already completed'), 400);
   }
 
-  throw new OrderError('INVALID_STATUS', message(locale, '仅已支付和失败订单允许重试', 'Only paid and failed orders can retry'), 400);
+  throw new OrderError(
+    'INVALID_STATUS',
+    message(locale, '仅已支付和失败订单允许重试', 'Only paid and failed orders can retry'),
+    400,
+  );
 }
 
 export async function retryRecharge(orderId: string, locale: Locale = 'zh'): Promise<void> {
@@ -638,7 +663,11 @@ export async function retryRecharge(orderId: string, locale: Locale = 'zh'): Pro
 
     const derived = deriveOrderState(latest);
     if (derived.rechargeStatus === 'recharging' || latest.status === ORDER_STATUS.PAID) {
-      throw new OrderError('CONFLICT', message(locale, '订单正在充值中，请稍后重试', 'Order is recharging, retry later'), 409);
+      throw new OrderError(
+        'CONFLICT',
+        message(locale, '订单正在充值中，请稍后重试', 'Order is recharging, retry later'),
+        409,
+      );
     }
 
     if (derived.rechargeStatus === 'success') {
@@ -646,10 +675,18 @@ export async function retryRecharge(orderId: string, locale: Locale = 'zh'): Pro
     }
 
     if (isRefundStatus(latest.status)) {
-      throw new OrderError('INVALID_STATUS', message(locale, '退款相关订单不允许重试', 'Refund-related order cannot retry'), 400);
+      throw new OrderError(
+        'INVALID_STATUS',
+        message(locale, '退款相关订单不允许重试', 'Refund-related order cannot retry'),
+        400,
+      );
     }
 
-    throw new OrderError('CONFLICT', message(locale, '订单状态已变更，请刷新后重试', 'Order status changed, refresh and retry'), 409);
+    throw new OrderError(
+      'CONFLICT',
+      message(locale, '订单状态已变更，请刷新后重试', 'Order status changed, refresh and retry'),
+      409,
+    );
   }
 
   await prisma.auditLog.create({
@@ -682,7 +719,11 @@ export async function processRefund(input: RefundInput): Promise<RefundResult> {
   const order = await prisma.order.findUnique({ where: { id: input.orderId } });
   if (!order) throw new OrderError('NOT_FOUND', message(locale, '订单不存在', 'Order not found'), 404);
   if (order.status !== ORDER_STATUS.COMPLETED) {
-    throw new OrderError('INVALID_STATUS', message(locale, '仅已完成订单允许退款', 'Only completed orders can be refunded'), 400);
+    throw new OrderError(
+      'INVALID_STATUS',
+      message(locale, '仅已完成订单允许退款', 'Only completed orders can be refunded'),
+      400,
+    );
   }
 
   const rechargeAmount = Number(order.amount);
@@ -716,7 +757,11 @@ export async function processRefund(input: RefundInput): Promise<RefundResult> {
     data: { status: ORDER_STATUS.REFUNDING },
   });
   if (lockResult.count === 0) {
-    throw new OrderError('CONFLICT', message(locale, '订单状态已变更，请刷新后重试', 'Order status changed, refresh and retry'), 409);
+    throw new OrderError(
+      'CONFLICT',
+      message(locale, '订单状态已变更，请刷新后重试', 'Order status changed, refresh and retry'),
+      409,
+    );
   }
 
   try {

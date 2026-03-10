@@ -22,15 +22,11 @@ export async function POST(request: NextRequest) {
       return Response.json({ code: 'SUCCESS', message: '成功' });
     }
     const success = await handlePaymentNotify(notification, provider.name);
-    return Response.json(
-      success ? { code: 'SUCCESS', message: '成功' } : { code: 'FAIL', message: '处理失败' },
-      { status: success ? 200 : 500 },
-    );
+    return Response.json(success ? { code: 'SUCCESS', message: '成功' } : { code: 'FAIL', message: '处理失败' }, {
+      status: success ? 200 : 500,
+    });
   } catch (error) {
     console.error('Wxpay notify error:', error);
-    return Response.json(
-      { code: 'FAIL', message: '处理失败' },
-      { status: 500 },
-    );
+    return Response.json({ code: 'FAIL', message: '处理失败' }, { status: 500 });
   }
 }

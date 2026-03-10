@@ -190,9 +190,7 @@ describe('GET /pay/[orderId]', () => {
     );
 
     const response = await GET(
-      createRequest(
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148',
-      ),
+      createRequest('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148'),
       {
         params: Promise.resolve({ orderId: 'order-001' }),
       },

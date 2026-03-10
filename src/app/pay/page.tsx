@@ -156,8 +156,7 @@ function PayContent() {
           }
         }
       }
-    } catch {
-    }
+    } catch {}
   };
 
   const loadMoreOrders = async () => {
@@ -203,7 +202,11 @@ function PayContent() {
         <div className="text-center text-red-500">
           <p className="text-lg font-medium">{pickLocaleText(locale, '缺少认证信息', 'Missing authentication info')}</p>
           <p className="mt-2 text-sm text-gray-500">
-            {pickLocaleText(locale, '请从 Sub2API 平台正确访问充值页面', 'Please open the recharge page from the Sub2API platform')}
+            {pickLocaleText(
+              locale,
+              '请从 Sub2API 平台正确访问充值页面',
+              'Please open the recharge page from the Sub2API platform',
+            )}
           </p>
         </div>
       </div>
@@ -216,7 +219,11 @@ function PayContent() {
         <div className="text-center text-red-500">
           <p className="text-lg font-medium">{pickLocaleText(locale, '用户不存在', 'User not found')}</p>
           <p className="mt-2 text-sm text-gray-500">
-            {pickLocaleText(locale, '请检查链接是否正确，或联系管理员', 'Please check whether the link is correct or contact the administrator')}
+            {pickLocaleText(
+              locale,
+              '请检查链接是否正确，或联系管理员',
+              'Please check whether the link is correct or contact the administrator',
+            )}
           </p>
         </div>
       </div>
@@ -272,15 +279,33 @@ function PayContent() {
 
       if (!res.ok) {
         const codeMessages: Record<string, string> = {
-          INVALID_TOKEN: pickLocaleText(locale, '认证已失效，请重新从平台进入充值页面', 'Authentication expired. Please re-enter the recharge page from the platform'),
-          USER_INACTIVE: pickLocaleText(locale, '账户已被禁用，无法充值，请联系管理员', 'This account is disabled and cannot be recharged. Please contact the administrator'),
-          TOO_MANY_PENDING: pickLocaleText(locale, '您有过多待支付订单，请先完成或取消现有订单后再试', 'You have too many pending orders. Please complete or cancel existing orders first'),
-          USER_NOT_FOUND: pickLocaleText(locale, '用户不存在，请检查链接是否正确', 'User not found. Please check whether the link is correct'),
+          INVALID_TOKEN: pickLocaleText(
+            locale,
+            '认证已失效，请重新从平台进入充值页面',
+            'Authentication expired. Please re-enter the recharge page from the platform',
+          ),
+          USER_INACTIVE: pickLocaleText(
+            locale,
+            '账户已被禁用，无法充值，请联系管理员',
+            'This account is disabled and cannot be recharged. Please contact the administrator',
+          ),
+          TOO_MANY_PENDING: pickLocaleText(
+            locale,
+            '您有过多待支付订单，请先完成或取消现有订单后再试',
+            'You have too many pending orders. Please complete or cancel existing orders first',
+          ),
+          USER_NOT_FOUND: pickLocaleText(
+            locale,
+            '用户不存在，请检查链接是否正确',
+            'User not found. Please check whether the link is correct',
+          ),
           DAILY_LIMIT_EXCEEDED: data.error,
           METHOD_DAILY_LIMIT_EXCEEDED: data.error,
           PAYMENT_GATEWAY_ERROR: data.error,
         };
-        setError(codeMessages[data.code] || data.error || pickLocaleText(locale, '创建订单失败', 'Failed to create order'));
+        setError(
+          codeMessages[data.code] || data.error || pickLocaleText(locale, '创建订单失败', 'Failed to create order'),
+        );
         return;
       }
 
@@ -481,11 +506,24 @@ function PayContent() {
                     {pickLocaleText(locale, '支付说明', 'Payment Notes')}
                   </div>
                   <ul className={['mt-2 space-y-1 text-sm', isDark ? 'text-slate-300' : 'text-slate-600'].join(' ')}>
-                    <li>{pickLocaleText(locale, '订单完成后会自动到账', 'Balance will be credited automatically after the order completes')}</li>
-                    <li>{pickLocaleText(locale, '如需历史记录请查看「我的订单」', 'Check "My Orders" for payment history')}</li>
+                    <li>
+                      {pickLocaleText(
+                        locale,
+                        '订单完成后会自动到账',
+                        'Balance will be credited automatically after the order completes',
+                      )}
+                    </li>
+                    <li>
+                      {pickLocaleText(
+                        locale,
+                        '如需历史记录请查看「我的订单」',
+                        'Check "My Orders" for payment history',
+                      )}
+                    </li>
                     {config.maxDailyAmount > 0 && (
                       <li>
-                        {pickLocaleText(locale, '每日最大充值', 'Maximum daily recharge')} ¥{config.maxDailyAmount.toFixed(2)}
+                        {pickLocaleText(locale, '每日最大充值', 'Maximum daily recharge')} ¥
+                        {config.maxDailyAmount.toFixed(2)}
                       </li>
                     )}
                   </ul>
@@ -551,18 +589,17 @@ function PayContent() {
         />
       )}
 
-
-{step === 'result' && orderResult && finalOrderState && (
-  <OrderStatus
-    orderId={orderResult.orderId}
-    order={finalOrderState}
-    statusAccessToken={orderResult.statusAccessToken}
-    onStateChange={setFinalOrderState}
-    onBack={handleBack}
-    dark={isDark}
-    locale={locale}
-  />
-)}
+      {step === 'result' && orderResult && finalOrderState && (
+        <OrderStatus
+          orderId={orderResult.orderId}
+          order={finalOrderState}
+          statusAccessToken={orderResult.statusAccessToken}
+          onStateChange={setFinalOrderState}
+          onBack={handleBack}
+          dark={isDark}
+          locale={locale}
+        />
+      )}
 
       {helpImageOpen && helpImageUrl && (
         <div
@@ -594,9 +631,7 @@ function PayPageFallback() {
 
 export default function PayPage() {
   return (
-    <Suspense
-      fallback={<PayPageFallback />}
-    >
+    <Suspense fallback={<PayPageFallback />}>
       <PayContent />
     </Suspense>
   );

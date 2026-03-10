@@ -97,7 +97,8 @@ export default function Leaderboard({ data, dark, locale = 'zh' }: LeaderboardPr
                   <td
                     className={`whitespace-nowrap px-4 py-3 text-sm font-medium ${dark ? 'text-slate-200' : 'text-slate-900'}`}
                   >
-                    {currency}{entry.totalAmount.toLocaleString()}
+                    {currency}
+                    {entry.totalAmount.toLocaleString()}
                   </td>
                   <td className={tdMuted}>{entry.orderCount}</td>
                 </tr>

@@ -11,11 +11,7 @@ import type {
 import { pageExecute, execute } from './client';
 import { verifySign } from './sign';
 import { getEnv } from '@/lib/config';
-import type {
-  AlipayTradeQueryResponse,
-  AlipayTradeRefundResponse,
-  AlipayTradeCloseResponse,
-} from './types';
+import type { AlipayTradeQueryResponse, AlipayTradeRefundResponse, AlipayTradeCloseResponse } from './types';
 import { parseAlipayNotificationParams } from './codec';
 
 export interface BuildAlipayPaymentUrlInput {
@@ -165,8 +161,7 @@ export class AlipayProvider implements PaymentProvider {
       tradeNo,
       orderId,
       amount: Math.round(amount * 100) / 100,
-      status:
-        tradeStatus === 'TRADE_SUCCESS' || tradeStatus === 'TRADE_FINISHED' ? 'success' : 'failed',
+      status: tradeStatus === 'TRADE_SUCCESS' || tradeStatus === 'TRADE_FINISHED' ? 'success' : 'failed',
       rawData: params,
     };
   }

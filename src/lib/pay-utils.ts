@@ -1,9 +1,4 @@
-import {
-  ORDER_STATUS,
-  PAYMENT_TYPE,
-  PAYMENT_PREFIX,
-  REDIRECT_PAYMENT_TYPES,
-} from './constants';
+import { ORDER_STATUS, PAYMENT_TYPE, PAYMENT_PREFIX, REDIRECT_PAYMENT_TYPES } from './constants';
 import type { Locale } from './locale';
 
 export interface UserInfo {
@@ -211,7 +206,10 @@ export function getPaymentTypeLabel(type: string, locale: Locale = 'zh'): string
   return locale === 'en' ? `${meta.label} (${meta.provider})` : `${meta.label}（${meta.provider}）`;
 }
 
-export function getPaymentDisplayInfo(type: string, locale: Locale = 'zh'): { channel: string; provider: string; sublabel?: string } {
+export function getPaymentDisplayInfo(
+  type: string,
+  locale: Locale = 'zh',
+): { channel: string; provider: string; sublabel?: string } {
   const meta = getPaymentText(type, locale);
   return { channel: meta.label, provider: meta.provider, sublabel: meta.sublabel };
 }

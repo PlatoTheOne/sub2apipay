@@ -39,33 +39,34 @@ function DashboardContent() {
   const isDark = theme === 'dark';
   const isEmbedded = uiMode === 'embedded';
 
-  const text = locale === 'en'
-    ? {
-        missingToken: 'Missing admin token',
-        missingTokenHint: 'Please access the admin page from the Sub2API platform.',
-        invalidToken: 'Invalid admin token',
-        requestFailed: 'Request failed',
-        loadFailed: 'Failed to load data',
-        title: 'Dashboard',
-        subtitle: 'Recharge order analytics and insights',
-        daySuffix: 'd',
-        orders: 'Order Management',
-        refresh: 'Refresh',
-        loading: 'Loading...',
-      }
-    : {
-        missingToken: '缺少管理员凭证',
-        missingTokenHint: '请从 Sub2API 平台正确访问管理页面',
-        invalidToken: '管理员凭证无效',
-        requestFailed: '请求失败',
-        loadFailed: '加载数据失败',
-        title: '数据概览',
-        subtitle: '充值订单统计与分析',
-        daySuffix: '天',
-        orders: '订单管理',
-        refresh: '刷新',
-        loading: '加载中...',
-      };
+  const text =
+    locale === 'en'
+      ? {
+          missingToken: 'Missing admin token',
+          missingTokenHint: 'Please access the admin page from the Sub2API platform.',
+          invalidToken: 'Invalid admin token',
+          requestFailed: 'Request failed',
+          loadFailed: 'Failed to load data',
+          title: 'Dashboard',
+          subtitle: 'Recharge order analytics and insights',
+          daySuffix: 'd',
+          orders: 'Order Management',
+          refresh: 'Refresh',
+          loading: 'Loading...',
+        }
+      : {
+          missingToken: '缺少管理员凭证',
+          missingTokenHint: '请从 Sub2API 平台正确访问管理页面',
+          invalidToken: '管理员凭证无效',
+          requestFailed: '请求失败',
+          loadFailed: '加载数据失败',
+          title: '数据概览',
+          subtitle: '充值订单统计与分析',
+          daySuffix: '天',
+          orders: '订单管理',
+          refresh: '刷新',
+          loading: '加载中...',
+        };
 
   const [days, setDays] = useState<number>(30);
   const [data, setData] = useState<DashboardData | null>(null);
@@ -138,7 +139,8 @@ function DashboardContent() {
         <>
           {DAYS_OPTIONS.map((d) => (
             <button key={d} type="button" onClick={() => setDays(d)} className={days === d ? btnActive : btnBase}>
-              {d}{text.daySuffix}
+              {d}
+              {text.daySuffix}
             </button>
           ))}
           <a href={`/admin?${navParams}`} className={btnBase}>
@@ -162,7 +164,7 @@ function DashboardContent() {
       )}
 
       {loading ? (
-          <div className={`py-24 text-center ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{text.loading}</div>
+        <div className={`py-24 text-center ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{text.loading}</div>
       ) : data ? (
         <div className="space-y-6">
           <DashboardStats summary={data.summary} dark={isDark} locale={locale} />
@@ -190,9 +192,7 @@ function DashboardPageFallback() {
 
 export default function DashboardPage() {
   return (
-    <Suspense
-      fallback={<DashboardPageFallback />}
-    >
+    <Suspense fallback={<DashboardPageFallback />}>
       <DashboardContent />
     </Suspense>
   );

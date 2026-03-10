@@ -101,12 +101,7 @@ function shouldAutoRedirect(opts: {
   qrCode?: string | null;
   isMobile: boolean;
 }): boolean {
-  return (
-    !opts.expired &&
-    !isStripeType(opts.paymentType) &&
-    !!opts.payUrl &&
-    (opts.isMobile || !opts.qrCode)
-  );
+  return !opts.expired && !isStripeType(opts.paymentType) && !!opts.payUrl && (opts.isMobile || !opts.qrCode);
 }
 
 // ============================================================
@@ -381,9 +376,7 @@ describe('Payment Flow - PC/Mobile, QR/Redirect', () => {
     });
 
     it('Mobile: uses H5 order, returns payUrl (no qrCode)', async () => {
-      mockWxpayCreateH5Order.mockResolvedValue(
-        'https://wx.tenpay.com/cgi-bin/mmpayweb-bin/checkmweb?prepay_id=wx123',
-      );
+      mockWxpayCreateH5Order.mockResolvedValue('https://wx.tenpay.com/cgi-bin/mmpayweb-bin/checkmweb?prepay_id=wx123');
 
       const request: CreatePaymentRequest = {
         orderId: 'order-wx-002',

@@ -1,5 +1,11 @@
 import type { Locale } from '@/lib/locale';
-import { formatStatus, formatCreatedAt, getStatusBadgeClass, getPaymentDisplayInfo, type MyOrder } from '@/lib/pay-utils';
+import {
+  formatStatus,
+  formatCreatedAt,
+  getStatusBadgeClass,
+  getPaymentDisplayInfo,
+  type MyOrder,
+} from '@/lib/pay-utils';
 
 interface OrderTableProps {
   isDark: boolean;
@@ -98,7 +104,9 @@ export default function OrderTable({ isDark, locale, loading, error, orders }: O
                     {formatStatus(order.status, locale)}
                   </span>
                 </div>
-                <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>{formatCreatedAt(order.createdAt, locale)}</div>
+                <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>
+                  {formatCreatedAt(order.createdAt, locale)}
+                </div>
               </div>
             ))}
           </div>

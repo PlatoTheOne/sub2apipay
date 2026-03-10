@@ -125,12 +125,7 @@ export async function subtractBalance(
   }
 }
 
-export async function addBalance(
-  userId: number,
-  amount: number,
-  notes: string,
-  idempotencyKey: string,
-): Promise<void> {
+export async function addBalance(userId: number, amount: number, notes: string, idempotencyKey: string): Promise<void> {
   const env = getEnv();
   const response = await fetch(`${env.SUB2API_BASE_URL}/api/v1/admin/users/${userId}/balance`, {
     method: 'POST',

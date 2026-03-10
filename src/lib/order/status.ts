@@ -101,7 +101,8 @@ export function getOrderDisplayState(
         label: '支付成功',
         color: 'text-amber-600',
         icon: '!',
-        message: '支付已完成，但余额充值暂未完成。系统可能会自动重试，请稍后在订单列表查看；如长时间未到账请联系管理员。',
+        message:
+          '支付已完成，但余额充值暂未完成。系统可能会自动重试，请稍后在订单列表查看；如长时间未到账请联系管理员。',
       };
     }
   }

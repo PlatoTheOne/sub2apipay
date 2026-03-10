@@ -4,7 +4,10 @@ const BODY_CHARSET_RE = /(?:^|&)charset=([^&]+)/i;
 function normalizeCharset(charset: string | null | undefined): string | null {
   if (!charset) return null;
 
-  const normalized = charset.trim().replace(/^['"]|['"]$/g, '').toLowerCase();
+  const normalized = charset
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
+    .toLowerCase();
   if (!normalized) return null;
 
   switch (normalized) {
@@ -67,9 +70,7 @@ export function decodeAlipayPayload(rawBody: string | Buffer, headers: Record<st
     return fallbackDecoded;
   }
 
-  throw new Error(
-    `Failed to decode Alipay payload${lastError instanceof Error ? `: ${lastError.message}` : ''}`,
-  );
+  throw new Error(`Failed to decode Alipay payload${lastError instanceof Error ? `: ${lastError.message}` : ''}`);
 }
 
 export function normalizeAlipaySignature(sign: string): string {

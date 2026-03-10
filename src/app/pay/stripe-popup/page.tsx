@@ -19,12 +19,20 @@ function StripePopupContent() {
   const text = {
     init: pickLocaleText(locale, '正在初始化...', 'Initializing...'),
     orderId: pickLocaleText(locale, '订单号', 'Order ID'),
-    loadFailed: pickLocaleText(locale, '支付组件加载失败，请关闭窗口重试', 'Failed to load payment component. Please close the window and try again.'),
+    loadFailed: pickLocaleText(
+      locale,
+      '支付组件加载失败，请关闭窗口重试',
+      'Failed to load payment component. Please close the window and try again.',
+    ),
     payFailed: pickLocaleText(locale, '支付失败，请重试', 'Payment failed. Please try again.'),
     closeWindow: pickLocaleText(locale, '关闭窗口', 'Close window'),
     redirecting: pickLocaleText(locale, '正在跳转到支付页面...', 'Redirecting to payment page...'),
     loadingForm: pickLocaleText(locale, '正在加载支付表单...', 'Loading payment form...'),
-    successClosing: pickLocaleText(locale, '支付成功，窗口即将自动关闭...', 'Payment successful. This window will close automatically...'),
+    successClosing: pickLocaleText(
+      locale,
+      '支付成功，窗口即将自动关闭...',
+      'Payment successful. This window will close automatically...',
+    ),
     closeWindowManually: pickLocaleText(locale, '手动关闭窗口', 'Close window manually'),
     processing: pickLocaleText(locale, '处理中...', 'Processing...'),
     payAmount: pickLocaleText(locale, `支付 ¥${amount.toFixed(2)}`, `Pay ¥${amount.toFixed(2)}`),
@@ -191,11 +199,17 @@ function StripePopupContent() {
               {'¥'}
               {amount.toFixed(2)}
             </div>
-            <p className={`mt-1 text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{text.orderId}: {orderId}</p>
+            <p className={`mt-1 text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+              {text.orderId}: {orderId}
+            </p>
           </div>
           {stripeError ? (
             <div className="space-y-3">
-              <div className={`rounded-lg border p-3 text-sm ${isDark ? 'border-red-700 bg-red-900/30 text-red-400' : 'border-red-200 bg-red-50 text-red-600'}`}>{stripeError}</div>
+              <div
+                className={`rounded-lg border p-3 text-sm ${isDark ? 'border-red-700 bg-red-900/30 text-red-400' : 'border-red-200 bg-red-50 text-red-600'}`}
+              >
+                {stripeError}
+              </div>
               <button
                 type="button"
                 onClick={() => window.close()}
@@ -207,9 +221,7 @@ function StripePopupContent() {
           ) : (
             <div className="flex items-center justify-center py-8">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#635bff] border-t-transparent" />
-              <span className={`ml-3 text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                {text.redirecting}
-              </span>
+              <span className={`ml-3 text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{text.redirecting}</span>
             </div>
           )}
         </div>
@@ -227,7 +239,9 @@ function StripePopupContent() {
             {'¥'}
             {amount.toFixed(2)}
           </div>
-          <p className={`mt-1 text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{text.orderId}: {orderId}</p>
+          <p className={`mt-1 text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+            {text.orderId}: {orderId}
+          </p>
         </div>
 
         {!stripeLoaded ? (
@@ -238,9 +252,7 @@ function StripePopupContent() {
         ) : stripeSuccess ? (
           <div className="py-6 text-center">
             <div className="text-5xl text-green-600">{'✓'}</div>
-            <p className={`mt-3 text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-              {text.successClosing}
-            </p>
+            <p className={`mt-3 text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{text.successClosing}</p>
             <button
               type="button"
               onClick={() => window.close()}
@@ -252,7 +264,11 @@ function StripePopupContent() {
         ) : (
           <>
             {stripeError && (
-              <div className={`rounded-lg border p-3 text-sm ${isDark ? 'border-red-700 bg-red-900/30 text-red-400' : 'border-red-200 bg-red-50 text-red-600'}`}>{stripeError}</div>
+              <div
+                className={`rounded-lg border p-3 text-sm ${isDark ? 'border-red-700 bg-red-900/30 text-red-400' : 'border-red-200 bg-red-50 text-red-600'}`}
+              >
+                {stripeError}
+              </div>
             )}
             <div
               ref={stripeContainerRef}
@@ -264,9 +280,7 @@ function StripePopupContent() {
               onClick={handleSubmit}
               className={[
                 'w-full rounded-lg py-3 font-medium text-white shadow-md transition-colors',
-                stripeSubmitting
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : getPaymentMeta('stripe').buttonClass,
+                stripeSubmitting ? 'bg-gray-400 cursor-not-allowed' : getPaymentMeta('stripe').buttonClass,
               ].join(' ')}
             >
               {stripeSubmitting ? (

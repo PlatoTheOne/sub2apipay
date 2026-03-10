@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useSearchParams } from 'next/navigation';
@@ -58,27 +57,60 @@ function closeCurrentWindow() {
 function getStatusConfig(order: PublicOrderStatusSnapshot | null, locale: Locale, hasAccessToken: boolean) {
   if (!order) {
     return locale === 'en'
-      ? { label: 'Payment Error', color: 'text-red-600', icon: '✗', message: hasAccessToken ? 'Unable to load the order status. Please try again later.' : 'Missing order access token. Please go back to the recharge page.' }
-      : { label: '支付异常', color: 'text-red-600', icon: '✗', message: hasAccessToken ? '未查询到订单状态，请稍后重试。' : '订单访问凭证缺失，请返回原充值页查看订单结果。' };
+      ? {
+          label: 'Payment Error',
+          color: 'text-red-600',
+          icon: '✗',
+          message: hasAccessToken
+            ? 'Unable to load the order status. Please try again later.'
+            : 'Missing order access token. Please go back to the recharge page.',
+        }
+      : {
+          label: '支付异常',
+          color: 'text-red-600',
+          icon: '✗',
+          message: hasAccessToken ? '未查询到订单状态，请稍后重试。' : '订单访问凭证缺失，请返回原充值页查看订单结果。',
+        };
   }
 
   if (order.rechargeSuccess) {
     return locale === 'en'
-      ? { label: 'Recharge Successful', color: 'text-green-600', icon: '✓', message: 'Your balance has been credited successfully.' }
+      ? {
+          label: 'Recharge Successful',
+          color: 'text-green-600',
+          icon: '✓',
+          message: 'Your balance has been credited successfully.',
+        }
       : { label: '充值成功', color: 'text-green-600', icon: '✓', message: '余额已成功到账！' };
   }
 
   if (order.paymentSuccess) {
     if (order.rechargeStatus === 'paid_pending' || order.rechargeStatus === 'recharging') {
       return locale === 'en'
-        ? { label: 'Top-up Processing', color: 'text-blue-600', icon: '⟳', message: 'Payment succeeded, and the balance top-up is being processed.' }
+        ? {
+            label: 'Top-up Processing',
+            color: 'text-blue-600',
+            icon: '⟳',
+            message: 'Payment succeeded, and the balance top-up is being processed.',
+          }
         : { label: '充值处理中', color: 'text-blue-600', icon: '⟳', message: '支付成功，余额正在充值中...' };
     }
 
     if (order.rechargeStatus === 'failed') {
       return locale === 'en'
-        ? { label: 'Payment Successful', color: 'text-amber-600', icon: '!', message: 'Payment succeeded, but the balance top-up has not completed yet. Please check again later or contact the administrator.' }
-        : { label: '支付成功', color: 'text-amber-600', icon: '!', message: '支付成功，但余额充值暂未完成，请稍后查看订单结果或联系管理员。' };
+        ? {
+            label: 'Payment Successful',
+            color: 'text-amber-600',
+            icon: '!',
+            message:
+              'Payment succeeded, but the balance top-up has not completed yet. Please check again later or contact the administrator.',
+          }
+        : {
+            label: '支付成功',
+            color: 'text-amber-600',
+            icon: '!',
+            message: '支付成功，但余额充值暂未完成，请稍后查看订单结果或联系管理员。',
+          };
     }
   }
 
@@ -90,7 +122,12 @@ function getStatusConfig(order: PublicOrderStatusSnapshot | null, locale: Locale
 
   if (order.status === 'EXPIRED') {
     return locale === 'en'
-      ? { label: 'Order Expired', color: 'text-gray-500', icon: '⏰', message: 'This order has expired. Please create a new order.' }
+      ? {
+          label: 'Order Expired',
+          color: 'text-gray-500',
+          icon: '⏰',
+          message: 'This order has expired. Please create a new order.',
+        }
       : { label: '订单已超时', color: 'text-gray-500', icon: '⏰', message: '订单已超时，请重新充值。' };
   }
 
@@ -224,11 +261,7 @@ function ResultContent() {
             </div>
           )
         ) : (
-          <button
-            type="button"
-            onClick={goBack}
-            className="mt-4 text-sm text-blue-600 underline hover:text-blue-700"
-          >
+          <button type="button" onClick={goBack} className="mt-4 text-sm text-blue-600 underline hover:text-blue-700">
             {text.back}
           </button>
         )}

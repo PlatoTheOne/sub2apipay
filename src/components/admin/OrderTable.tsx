@@ -32,37 +32,38 @@ interface OrderTableProps {
 
 export default function OrderTable({ orders, onRetry, onCancel, onViewDetail, dark, locale = 'zh' }: OrderTableProps) {
   const currency = locale === 'en' ? '$' : '¥';
-  const text = locale === 'en'
-    ? {
-        orderId: 'Order ID',
-        userName: 'Username',
-        email: 'Email',
-        notes: 'Notes',
-        amount: 'Amount',
-        status: 'Status',
-        paymentMethod: 'Payment',
-        source: 'Source',
-        createdAt: 'Created At',
-        actions: 'Actions',
-        retry: 'Retry',
-        cancel: 'Cancel',
-        empty: 'No orders',
-      }
-    : {
-        orderId: '订单号',
-        userName: '用户名',
-        email: '邮箱',
-        notes: '备注',
-        amount: '金额',
-        status: '状态',
-        paymentMethod: '支付方式',
-        source: '来源',
-        createdAt: '创建时间',
-        actions: '操作',
-        retry: '重试',
-        cancel: '取消',
-        empty: '暂无订单',
-      };
+  const text =
+    locale === 'en'
+      ? {
+          orderId: 'Order ID',
+          userName: 'Username',
+          email: 'Email',
+          notes: 'Notes',
+          amount: 'Amount',
+          status: 'Status',
+          paymentMethod: 'Payment',
+          source: 'Source',
+          createdAt: 'Created At',
+          actions: 'Actions',
+          retry: 'Retry',
+          cancel: 'Cancel',
+          empty: 'No orders',
+        }
+      : {
+          orderId: '订单号',
+          userName: '用户名',
+          email: '邮箱',
+          notes: '备注',
+          amount: '金额',
+          status: '状态',
+          paymentMethod: '支付方式',
+          source: '来源',
+          createdAt: '创建时间',
+          actions: '操作',
+          retry: '重试',
+          cancel: '取消',
+          empty: '暂无订单',
+        };
 
   const thCls = `px-4 py-3 text-left text-xs font-medium uppercase ${dark ? 'text-slate-400' : 'text-gray-500'}`;
   const tdMuted = `whitespace-nowrap px-4 py-3 text-sm ${dark ? 'text-slate-400' : 'text-gray-500'}`;
@@ -133,7 +134,8 @@ export default function OrderTable({ orders, onRetry, onCancel, onViewDetail, da
                 <td className={tdMuted}>{order.userEmail || '-'}</td>
                 <td className={tdMuted}>{order.userNotes || '-'}</td>
                 <td className={`whitespace-nowrap px-4 py-3 text-sm font-medium ${dark ? 'text-slate-200' : ''}`}>
-                  {currency}{order.amount.toFixed(2)}
+                  {currency}
+                  {order.amount.toFixed(2)}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-sm">
                   <span

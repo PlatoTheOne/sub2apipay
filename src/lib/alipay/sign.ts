@@ -6,7 +6,11 @@ function wrapBase64(b64: string): string {
 }
 
 function normalizePemLikeValue(key: string): string {
-  return key.trim().replace(/\r\n/g, '\n').replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n');
+  return key
+    .trim()
+    .replace(/\r\n/g, '\n')
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n');
 }
 
 function shouldLogVerifyDebug(): boolean {
@@ -42,7 +46,9 @@ export function generateSign(params: Record<string, string>, privateKey: string)
 /** 用支付宝公钥验证签名（回调验签：排除 sign 和 sign_type） */
 export function verifySign(params: Record<string, string>, alipayPublicKey: string, sign: string): boolean {
   const filtered = Object.entries(params)
-    .filter(([key, value]) => key !== 'sign' && key !== 'sign_type' && value !== '' && value !== undefined && value !== null)
+    .filter(
+      ([key, value]) => key !== 'sign' && key !== 'sign_type' && value !== '' && value !== undefined && value !== null,
+    )
     .sort(([a], [b]) => a.localeCompare(b));
 
   const signStr = filtered.map(([key, value]) => `${key}=${value}`).join('&');

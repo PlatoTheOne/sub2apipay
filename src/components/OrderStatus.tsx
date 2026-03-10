@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -19,28 +18,61 @@ interface OrderStatusProps {
 function getStatusConfig(order: PublicOrderStatusSnapshot, locale: Locale) {
   if (order.rechargeSuccess) {
     return locale === 'en'
-      ? { label: 'Recharge Successful', color: 'text-green-600', icon: '✓', message: 'Your balance has been credited. Thank you for your payment.' }
+      ? {
+          label: 'Recharge Successful',
+          color: 'text-green-600',
+          icon: '✓',
+          message: 'Your balance has been credited. Thank you for your payment.',
+        }
       : { label: '充值成功', color: 'text-green-600', icon: '✓', message: '余额已到账，感谢您的充值！' };
   }
 
   if (order.paymentSuccess) {
     if (order.rechargeStatus === 'paid_pending' || order.rechargeStatus === 'recharging') {
       return locale === 'en'
-        ? { label: 'Recharging', color: 'text-blue-600', icon: '⟳', message: 'Payment received. Recharging your balance...' }
+        ? {
+            label: 'Recharging',
+            color: 'text-blue-600',
+            icon: '⟳',
+            message: 'Payment received. Recharging your balance...',
+          }
         : { label: '充值中', color: 'text-blue-600', icon: '⟳', message: '支付成功，正在充值余额中，请稍候...' };
     }
 
     if (order.rechargeStatus === 'failed') {
       return locale === 'en'
-        ? { label: 'Payment Successful', color: 'text-amber-600', icon: '!', message: 'Payment completed, but the balance top-up has not finished yet. The system may retry automatically. Please check the order list later or contact the administrator if it remains unresolved.' }
-        : { label: '支付成功', color: 'text-amber-600', icon: '!', message: '支付已完成，但余额充值暂未完成。系统可能会自动重试，请稍后在订单列表查看；如长时间未到账请联系管理员。' };
+        ? {
+            label: 'Payment Successful',
+            color: 'text-amber-600',
+            icon: '!',
+            message:
+              'Payment completed, but the balance top-up has not finished yet. The system may retry automatically. Please check the order list later or contact the administrator if it remains unresolved.',
+          }
+        : {
+            label: '支付成功',
+            color: 'text-amber-600',
+            icon: '!',
+            message:
+              '支付已完成，但余额充值暂未完成。系统可能会自动重试，请稍后在订单列表查看；如长时间未到账请联系管理员。',
+          };
     }
   }
 
   if (order.status === 'FAILED') {
     return locale === 'en'
-      ? { label: 'Payment Failed', color: 'text-red-600', icon: '✗', message: 'Payment was not completed. Please try again. If funds were deducted but not credited, contact the administrator.' }
-      : { label: '支付失败', color: 'text-red-600', icon: '✗', message: '支付未完成，请重新发起支付；如已扣款未到账，请联系管理员处理。' };
+      ? {
+          label: 'Payment Failed',
+          color: 'text-red-600',
+          icon: '✗',
+          message:
+            'Payment was not completed. Please try again. If funds were deducted but not credited, contact the administrator.',
+        }
+      : {
+          label: '支付失败',
+          color: 'text-red-600',
+          icon: '✗',
+          message: '支付未完成，请重新发起支付；如已扣款未到账，请联系管理员处理。',
+        };
   }
 
   if (order.status === 'PENDING') {
@@ -51,7 +83,12 @@ function getStatusConfig(order: PublicOrderStatusSnapshot, locale: Locale) {
 
   if (order.status === 'EXPIRED') {
     return locale === 'en'
-      ? { label: 'Order Expired', color: 'text-gray-500', icon: '⏰', message: 'This order has expired. Please create a new one.' }
+      ? {
+          label: 'Order Expired',
+          color: 'text-gray-500',
+          icon: '⏰',
+          message: 'This order has expired. Please create a new one.',
+        }
       : { label: '订单超时', color: 'text-gray-500', icon: '⏰', message: '订单已超时，请重新创建订单。' };
   }
 
@@ -62,7 +99,12 @@ function getStatusConfig(order: PublicOrderStatusSnapshot, locale: Locale) {
   }
 
   return locale === 'en'
-    ? { label: 'Payment Error', color: 'text-red-600', icon: '✗', message: 'Payment status is abnormal. Please contact the administrator.' }
+    ? {
+        label: 'Payment Error',
+        color: 'text-red-600',
+        icon: '✗',
+        message: 'Payment status is abnormal. Please contact the administrator.',
+      }
     : { label: '支付异常', color: 'text-red-600', icon: '✗', message: '支付状态异常，请联系管理员处理。' };
 }
 
@@ -100,8 +142,7 @@ export default function OrderStatus({
         if (cancelled) return;
         setCurrentOrder(nextOrder);
         onStateChangeRef.current?.(nextOrder);
-      } catch {
-      }
+      } catch {}
     };
 
     refreshOrder();

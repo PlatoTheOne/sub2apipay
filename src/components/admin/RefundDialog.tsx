@@ -74,10 +74,7 @@ export default function RefundDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onCancel}>
       <div
-        className={[
-          'w-full max-w-md rounded-xl p-6 shadow-xl',
-          dark ? 'bg-slate-900' : 'bg-white',
-        ].join(' ')}
+        className={['w-full max-w-md rounded-xl p-6 shadow-xl', dark ? 'bg-slate-900' : 'bg-white'].join(' ')}
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className={['text-lg font-bold', dark ? 'text-slate-100' : 'text-gray-900'].join(' ')}>{text.title}</h3>
@@ -90,7 +87,10 @@ export default function RefundDialog({
 
           <div className={['rounded-lg p-3', dark ? 'bg-slate-800' : 'bg-gray-50'].join(' ')}>
             <div className={['text-sm', dark ? 'text-slate-400' : 'text-gray-500'].join(' ')}>{text.amount}</div>
-            <div className="text-lg font-bold text-red-600">{currency}{amount.toFixed(2)}</div>
+            <div className="text-lg font-bold text-red-600">
+              {currency}
+              {amount.toFixed(2)}
+            </div>
           </div>
 
           {warning && (
