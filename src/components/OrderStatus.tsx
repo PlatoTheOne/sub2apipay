@@ -77,7 +77,9 @@ export default function OrderStatus({
 }: OrderStatusProps) {
   const [currentOrder, setCurrentOrder] = useState(order);
   const onStateChangeRef = useRef(onStateChange);
-  onStateChangeRef.current = onStateChange;
+  useEffect(() => {
+    onStateChangeRef.current = onStateChange;
+  });
 
   useEffect(() => {
     setCurrentOrder(order);
