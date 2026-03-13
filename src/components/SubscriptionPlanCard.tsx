@@ -57,7 +57,7 @@ export default function SubscriptionPlanCard({ plan, onSubscribe, isDark, locale
     >
       {/* Header: Platform badge + Name + Period */}
       <div className="mb-4">
-        <div className="mb-3 flex items-center gap-2">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           {plan.platform && <PlatformBadge platform={plan.platform} />}
           <h3 className={['text-lg font-bold', isDark ? 'text-slate-100' : 'text-slate-900'].join(' ')}>
             {plan.name}
@@ -70,6 +70,14 @@ export default function SubscriptionPlanCard({ plan, onSubscribe, isDark, locale
           >
             {periodLabel}
           </span>
+          {isOpenAI && plan.allowMessagesDispatch && (
+            <span className={[
+              'rounded-full px-2 py-0.5 text-xs font-medium',
+              isDark ? 'bg-green-500/20 text-green-300' : 'bg-green-100 text-green-700',
+            ].join(' ')}>
+              /v1/messages
+            </span>
+          )}
         </div>
 
         {/* Price */}
@@ -141,39 +149,18 @@ export default function SubscriptionPlanCard({ plan, onSubscribe, isDark, locale
         </div>
       )}
 
-      {/* OpenAI specific: messages dispatch + default model */}
-      {isOpenAI && (
+      {/* OpenAI specific: default model */}
+      {isOpenAI && plan.defaultMappedModel && (
         <div className={[
-          'mb-4 rounded-lg border p-3',
+          'mb-4 flex items-center justify-between rounded-lg border px-3 py-2 text-sm',
           isDark ? 'border-green-500/20 bg-green-500/5' : 'border-green-500/20 bg-green-50/50',
         ].join(' ')}>
-          <div className="space-y-1.5 text-sm">
-            <div className="flex items-center justify-between">
-              <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-                {pickLocaleText(locale, '/v1/messages 调度', '/v1/messages Dispatch')}
-              </span>
-              <span className={[
-                'rounded-full px-2 py-0.5 text-xs font-medium',
-                plan.allowMessagesDispatch
-                  ? isDark ? 'bg-green-500/20 text-green-300' : 'bg-green-100 text-green-700'
-                  : isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500',
-              ].join(' ')}>
-                {plan.allowMessagesDispatch
-                  ? pickLocaleText(locale, '已启用', 'Enabled')
-                  : pickLocaleText(locale, '未启用', 'Disabled')}
-              </span>
-            </div>
-            {plan.defaultMappedModel && (
-              <div className="flex items-center justify-between">
-                <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-                  {pickLocaleText(locale, '默认模型', 'Default Model')}
-                </span>
-                <span className={['text-xs font-mono', isDark ? 'text-slate-300' : 'text-slate-700'].join(' ')}>
-                  {plan.defaultMappedModel}
-                </span>
-              </div>
-            )}
-          </div>
+          <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+            {pickLocaleText(locale, '默认模型', 'Default Model')}
+          </span>
+          <span className={['text-xs font-mono', isDark ? 'text-slate-300' : 'text-slate-700'].join(' ')}>
+            {plan.defaultMappedModel}
+          </span>
         </div>
       )}
 

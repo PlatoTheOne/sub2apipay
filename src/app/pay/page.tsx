@@ -473,10 +473,10 @@ function PayContent() {
   const allEntriesClosed = channelsLoaded && !canTopUp && !hasPlans;
   const showMainTabs = channelsLoaded && !allEntriesClosed && (hasChannels || hasPlans);
   const pageTitle = showMainTabs
-    ? pickLocaleText(locale, '选择适合你的 订阅套餐', 'Choose Your Plan')
+    ? pickLocaleText(locale, '选择适合你的 充值/订阅服务', 'Choose Your Recharge / Subscription')
     : pickLocaleText(locale, 'Sub2API 余额充值', 'Sub2API Balance Recharge');
   const pageSubtitle = showMainTabs
-    ? pickLocaleText(locale, '通过支付购买或兑换码激活获取订阅服务', 'Subscribe via payment or activation code')
+    ? pickLocaleText(locale, '充值余额或者订阅套餐', 'Top up balance or subscribe to a plan')
     : pickLocaleText(locale, '安全支付，自动到账', 'Secure payment, automatic crediting');
 
   return (
@@ -737,9 +737,15 @@ function PayContent() {
               <button
                 type="button"
                 onClick={() => setShowTopUpForm(false)}
-                className={['mb-4 text-sm', isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-600 hover:text-emerald-500'].join(' ')}
+                className={[
+                  'mb-4 flex items-center gap-1 text-sm transition-colors',
+                  isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700',
+                ].join(' ')}
               >
-                ← {pickLocaleText(locale, '返回', 'Back')}
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                {pickLocaleText(locale, '返回', 'Back')}
               </button>
               <PaymentForm
                 userId={resolvedUserId ?? 0}

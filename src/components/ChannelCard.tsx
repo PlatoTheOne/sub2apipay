@@ -26,8 +26,9 @@ interface ChannelCardProps {
 
 export default function ChannelCard({ channel, onTopUp, isDark, locale }: ChannelCardProps) {
   const usableQuota = (1 / channel.rateMultiplier).toFixed(2);
-  const platformStyle = getPlatformStyle(channel.platform);
-  const tagCls = isDark ? platformStyle.modelTag.dark : platformStyle.modelTag.light;
+  const ps = getPlatformStyle(channel.platform);
+  const tagCls = isDark ? ps.modelTag.dark : ps.modelTag.light;
+  const accentCls = isDark ? ps.accent.dark : ps.accent.light;
 
   return (
     <div
@@ -52,16 +53,16 @@ export default function ChannelCard({ channel, onTopUp, isDark, locale }: Channe
               {pickLocaleText(locale, '当前倍率', 'Rate')}
             </span>
             <div className="flex items-baseline">
-              <span className="text-xl font-bold text-emerald-500">1</span>
+              <span className={['text-xl font-bold', accentCls].join(' ')}>1</span>
               <span className={['mx-1.5 text-lg', isDark ? 'text-slate-500' : 'text-slate-400'].join(' ')}>:</span>
-              <span className="text-xl font-bold text-emerald-500">{channel.rateMultiplier}</span>
+              <span className={['text-xl font-bold', accentCls].join(' ')}>{channel.rateMultiplier}</span>
             </div>
           </div>
           <p className={['mt-1 text-sm', isDark ? 'text-slate-400' : 'text-slate-500'].join(' ')}>
             {pickLocaleText(
               locale,
-              <>1元可用约<span className="font-medium text-emerald-500">{usableQuota}</span>美元额度</>,
-              <>1 CNY ≈ <span className="font-medium text-emerald-500">{usableQuota}</span> USD quota</>,
+              <>1元可用约<span className={['font-medium', accentCls].join(' ')}>{usableQuota}</span>美元额度</>,
+              <>1 CNY ≈ <span className={['font-medium', accentCls].join(' ')}>{usableQuota}</span> USD quota</>,
             )}
           </p>
         </div>
@@ -89,7 +90,7 @@ export default function ChannelCard({ channel, onTopUp, isDark, locale }: Channe
                   tagCls,
                 ].join(' ')}
               >
-                <span className={['h-1.5 w-1.5 rounded-full', platformStyle.modelTag.dot].join(' ')} />
+                <span className={['h-1.5 w-1.5 rounded-full', ps.modelTag.dot].join(' ')} />
                 {model}
               </span>
             ))}
@@ -126,7 +127,10 @@ export default function ChannelCard({ channel, onTopUp, isDark, locale }: Channe
       <button
         type="button"
         onClick={onTopUp}
-        className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 active:bg-emerald-700"
+        className={[
+          'mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-colors',
+          ps.button,
+        ].join(' ')}
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
