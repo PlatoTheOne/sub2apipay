@@ -244,7 +244,8 @@ export async function searchUsers(keyword: string): Promise<{ id: number; email:
   }
 
   const data = await response.json();
-  return (data.data ?? []) as { id: number; email: string; username: string; notes?: string }[];
+  const paginated = data.data ?? {};
+  return (paginated.items ?? []) as { id: number; email: string; username: string; notes?: string }[];
 }
 
 export async function listSubscriptions(params?: {
