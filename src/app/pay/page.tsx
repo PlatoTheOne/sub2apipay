@@ -816,10 +816,7 @@ function PayContent() {
                       </button>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {(renewGroupId !== null
-                        ? plans.filter((p) => p.groupId === renewGroupId)
-                        : plans
-                      ).map((plan) => (
+                      {(renewGroupId !== null ? plans.filter((p) => p.groupId === renewGroupId) : plans).map((plan) => (
                         <SubscriptionPlanCard
                           key={plan.id}
                           plan={plan}
