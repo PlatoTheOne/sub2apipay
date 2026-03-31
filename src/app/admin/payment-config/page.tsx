@@ -299,13 +299,7 @@ function PaymentConfigContent() {
       if (!res.ok) return;
       const data = await res.json();
       const configs: { key: string; value: string }[] = data.configs ?? [];
-      const overrideKeys = [
-        'ENABLED_PAYMENT_TYPES',
-        'RECHARGE_MIN_AMOUNT',
-        'RECHARGE_MAX_AMOUNT',
-        'DAILY_RECHARGE_LIMIT',
-        'ORDER_TIMEOUT_MINUTES',
-      ];
+      const overrideKeys = ['ENABLED_PAYMENT_TYPES', 'ENABLED_PROVIDERS'];
       let hasOverride = false;
       for (const c of configs) {
         if (c.key === 'PRODUCT_NAME_PREFIX') setRcPrefix(c.value);
@@ -560,6 +554,10 @@ function PaymentConfigContent() {
               group: 'connection',
               label: 'Sub2API Admin API Key',
             },
+            { key: 'RECHARGE_MIN_AMOUNT', value: rcMinAmount, group: 'payment', label: '最小充值金额' },
+            { key: 'RECHARGE_MAX_AMOUNT', value: rcMaxAmount, group: 'payment', label: '最大充值金额' },
+            { key: 'DAILY_RECHARGE_LIMIT', value: rcDailyLimit, group: 'payment', label: '每日充值限额' },
+            { key: 'ORDER_TIMEOUT_MINUTES', value: rcOrderTimeout, group: 'payment', label: '订单超时时间' },
             ...(rcOverrideEnv
               ? [
                   { key: 'ENABLED_PROVIDERS', value: rcEnabledProviders, group: 'payment', label: '启用的服务商' },
@@ -569,10 +567,6 @@ function PaymentConfigContent() {
                     group: 'payment',
                     label: '启用的支付方式',
                   },
-                  { key: 'RECHARGE_MIN_AMOUNT', value: rcMinAmount, group: 'payment', label: '最小充值金额' },
-                  { key: 'RECHARGE_MAX_AMOUNT', value: rcMaxAmount, group: 'payment', label: '最大充值金额' },
-                  { key: 'DAILY_RECHARGE_LIMIT', value: rcDailyLimit, group: 'payment', label: '每日充值限额' },
-                  { key: 'ORDER_TIMEOUT_MINUTES', value: rcOrderTimeout, group: 'payment', label: '订单超时时间' },
                 ]
               : []),
           ],
@@ -799,6 +793,50 @@ function PaymentConfigContent() {
           )}
         </div>
 
+        {/* Amount / timeout fields */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div>
+            <label className={labelCls}>{t.minRechargeAmount}</label>
+            <input
+              type="number"
+              min="0"
+              value={rcMinAmount}
+              onChange={(e) => setRcMinAmount(e.target.value)}
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>{t.maxRechargeAmount}</label>
+            <input
+              type="number"
+              min="0"
+              value={rcMaxAmount}
+              onChange={(e) => setRcMaxAmount(e.target.value)}
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>{t.dailyRechargeLimit}</label>
+            <input
+              type="number"
+              min="0"
+              value={rcDailyLimit}
+              onChange={(e) => setRcDailyLimit(e.target.value)}
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>{t.orderTimeoutMinutes}</label>
+            <input
+              type="number"
+              min="1"
+              value={rcOrderTimeout}
+              onChange={(e) => setRcOrderTimeout(e.target.value)}
+              className={inputCls}
+            />
+          </div>
+        </div>
+
         {/* ── 覆盖环境变量配置 ── */}
         <div className={subCardCls}>
           <div className="flex items-center gap-3 mb-2">
@@ -841,50 +879,6 @@ function PaymentConfigContent() {
                         </button>
                       );
                     })}
-                  </div>
-                </div>
-
-                {/* Amount / timeout fields */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                  <div>
-                    <label className={labelCls}>{t.minRechargeAmount}</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={rcMinAmount}
-                      onChange={(e) => setRcMinAmount(e.target.value)}
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelCls}>{t.maxRechargeAmount}</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={rcMaxAmount}
-                      onChange={(e) => setRcMaxAmount(e.target.value)}
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelCls}>{t.dailyRechargeLimit}</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={rcDailyLimit}
-                      onChange={(e) => setRcDailyLimit(e.target.value)}
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelCls}>{t.orderTimeoutMinutes}</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={rcOrderTimeout}
-                      onChange={(e) => setRcOrderTimeout(e.target.value)}
-                      className={inputCls}
-                    />
                   </div>
                 </div>
 
