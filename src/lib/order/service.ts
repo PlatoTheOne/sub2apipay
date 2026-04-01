@@ -376,6 +376,22 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
         actualProvider = new EasyPayProvider(instanceResult.instanceId, instanceResult.config);
       }
       selectedInstanceId = instanceResult.instanceId;
+    } else {
+      // 检查是否有配置的实例但全部被限额过滤掉
+      const instanceCount = await prisma.paymentProviderInstance.count({
+        where: { providerKey: provider.providerKey, enabled: true },
+      });
+      if (instanceCount > 0) {
+        throw new OrderError(
+          'NO_AVAILABLE_INSTANCE',
+          message(
+            locale,
+            '当前支付方式暂无可用渠道（所有实例已达限额），请稍后重试或更换支付方式',
+            'No available payment instance (all instances have reached their limits). Please try later or use another payment method',
+          ),
+          429,
+        );
+      }
     }
 
     const statusAccessToken = createOrderStatusAccessToken(order.id, input.userId);

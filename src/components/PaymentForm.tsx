@@ -7,7 +7,9 @@ import { PAYMENT_TYPE_META, getPaymentIconType, getPaymentMeta, getPaymentDispla
 export interface MethodLimitInfo {
   available: boolean;
   remaining: number | null;
-  /** 单笔限额，0 = 使用全局 maxAmount */
+  /** 单笔最小限额，0 = 使用全局 minAmount */
+  singleMin?: number;
+  /** 单笔最大限额，0 = 使用全局 maxAmount */
   singleMax?: number;
   /** 手续费率百分比，0 = 无手续费 */
   feeRate?: number;
@@ -90,13 +92,15 @@ export default function PaymentForm({
   const selectedAmount = amount || 0;
   const isMethodAvailable = !methodLimits || methodLimits[effectivePaymentType]?.available !== false;
   const methodSingleMax = methodLimits?.[effectivePaymentType]?.singleMax;
+  const methodSingleMin = methodLimits?.[effectivePaymentType]?.singleMin;
   const effectiveMax = methodSingleMax !== undefined && methodSingleMax > 0 ? methodSingleMax : maxAmount;
+  const effectiveMin = methodSingleMin !== undefined && methodSingleMin > 0 ? Math.max(methodSingleMin, minAmount) : minAmount;
   const feeRate = methodLimits?.[effectivePaymentType]?.feeRate ?? 0;
   const feeAmount = feeRate > 0 && selectedAmount > 0 ? Math.ceil(((selectedAmount * feeRate) / 100) * 100) / 100 : 0;
   const payAmount =
     feeRate > 0 && selectedAmount > 0 ? Math.round((selectedAmount + feeAmount) * 100) / 100 : selectedAmount;
   const isValid =
-    selectedAmount >= minAmount &&
+    selectedAmount >= effectiveMin &&
     selectedAmount <= effectiveMax &&
     hasValidCentPrecision(selectedAmount) &&
     isMethodAvailable;
@@ -190,7 +194,7 @@ export default function PaymentForm({
               {locale === 'en' ? 'Recharge Amount' : '充值金额'}
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {QUICK_AMOUNTS.filter((val) => val >= minAmount && val <= effectiveMax).map((val) => (
+              {QUICK_AMOUNTS.filter((val) => val >= effectiveMin && val <= effectiveMax).map((val) => (
                 <button
                   key={val}
                   type="button"
@@ -227,11 +231,11 @@ export default function PaymentForm({
                 type="text"
                 inputMode="decimal"
                 step="0.01"
-                min={minAmount}
+                min={effectiveMin}
                 max={effectiveMax}
                 value={customAmount}
                 onChange={(e) => handleCustomAmountChange(e.target.value)}
-                placeholder={`${minAmount} - ${effectiveMax}`}
+                placeholder={`${effectiveMin} - ${effectiveMax}`}
                 className={[
                   'w-full rounded-lg border py-3 pl-8 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500',
                   dark ? 'border-slate-700 bg-slate-900 text-slate-100' : 'border-gray-300 bg-white text-gray-900',

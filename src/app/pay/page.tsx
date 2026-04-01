@@ -429,6 +429,11 @@ function PayContent() {
           USER_INACTIVE: pickLocaleText(locale, '账户已被禁用，无法充值', 'Account is disabled'),
           TOO_MANY_PENDING: pickLocaleText(locale, '待支付订单过多，请先处理', 'Too many pending orders'),
           USER_NOT_FOUND: pickLocaleText(locale, '用户不存在', 'User not found'),
+          NO_AVAILABLE_INSTANCE: pickLocaleText(
+            locale,
+            '当前支付方式暂无可用渠道，请稍后重试或更换支付方式',
+            'No available payment instance, please try later or use another method',
+          ),
           DAILY_LIMIT_EXCEEDED: data.error,
           METHOD_DAILY_LIMIT_EXCEEDED: data.error,
           PAYMENT_GATEWAY_ERROR: data.error,
