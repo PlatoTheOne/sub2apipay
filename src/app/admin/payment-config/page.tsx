@@ -815,35 +815,33 @@ function PaymentConfigContent() {
               <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t.loadingEnvDefaults}</div>
             ) : (
               <>
-                {/* Sub2API Admin API Key */}
-                <div className="mb-3">
-                  <label className={labelCls}>{t.sub2apiAdminApiKey}</label>
-                  <input
-                    type="password"
-                    value={rcSub2apiKey}
-                    onChange={(e) => setRcSub2apiKey(e.target.value)}
-                    className={[inputCls, 'max-w-md'].join(' ')}
-                    placeholder={t.sub2apiAdminApiKeyHint}
-                    autoComplete="off"
-                  />
-                  <p className={`mt-1 text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {t.sub2apiAdminApiKeyHint}
-                  </p>
-                </div>
-
-                {/* Max pending orders */}
-                <div className="flex items-center gap-2 mb-4">
-                  <label className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                    {t.maxPendingOrders}
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="99"
-                    value={rcMaxPendingOrders}
-                    onChange={(e) => setRcMaxPendingOrders(e.target.value)}
-                    className={[inputCls, '!w-20'].join(' ')}
-                  />
+                {/* Sub2API Admin API Key + Max pending orders */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  <div>
+                    <label className={labelCls}>{t.sub2apiAdminApiKey}</label>
+                    <input
+                      type="password"
+                      value={rcSub2apiKey}
+                      onChange={(e) => setRcSub2apiKey(e.target.value)}
+                      className={inputCls}
+                      placeholder={t.sub2apiAdminApiKeyHint}
+                      autoComplete="off"
+                    />
+                    <p className={`mt-1 text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {t.sub2apiAdminApiKeyHint}
+                    </p>
+                  </div>
+                  <div>
+                    <label className={labelCls}>{t.maxPendingOrders}</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="99"
+                      value={rcMaxPendingOrders}
+                      onChange={(e) => setRcMaxPendingOrders(e.target.value)}
+                      className={[inputCls, '!w-20'].join(' ')}
+                    />
+                  </div>
                 </div>
 
                 {/* Provider type badges */}
@@ -1080,7 +1078,7 @@ function PaymentConfigContent() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelCls}>{t.instanceProvider}</label>
+                  <label className={labelCls}>{t.instanceProvider}<span className="text-red-500 ml-0.5">*</span></label>
                   <select
                     value={instanceForm.providerKey}
                     onChange={(e) =>
@@ -1103,7 +1101,7 @@ function PaymentConfigContent() {
                   </select>
                 </div>
                 <div>
-                  <label className={labelCls}>{t.instanceName}</label>
+                  <label className={labelCls}>{t.instanceName}<span className="text-red-500 ml-0.5">*</span></label>
                   <input
                     type="text"
                     value={instanceForm.name}
@@ -1204,7 +1202,7 @@ function PaymentConfigContent() {
               )}
 
               <div>
-                <label className={[labelCls, 'mb-2'].join(' ')}>{t.instanceConfig}</label>
+                <label className={[labelCls, 'mb-2'].join(' ')}>{t.instanceConfig}<span className="text-red-500 ml-0.5">*</span></label>
                 <div className="space-y-2.5">
                   {(PROVIDER_CONFIG_FIELDS[instanceForm.providerKey] ?? []).map((field) => (
                     <div key={field.key}>
@@ -1212,8 +1210,10 @@ function PaymentConfigContent() {
                         className={`block text-xs font-medium mb-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
                       >
                         {field.label[locale]}
-                        {field.optional && (
+                        {field.optional ? (
                           <span className="ml-1 opacity-50">({locale === 'en' ? 'optional' : '可选'})</span>
+                        ) : (
+                          <span className="text-red-500 ml-0.5">*</span>
                         )}
                       </label>
                       <input
