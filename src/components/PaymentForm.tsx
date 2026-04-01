@@ -94,7 +94,8 @@ export default function PaymentForm({
   const methodSingleMax = methodLimits?.[effectivePaymentType]?.singleMax;
   const methodSingleMin = methodLimits?.[effectivePaymentType]?.singleMin;
   const effectiveMax = methodSingleMax !== undefined && methodSingleMax > 0 ? methodSingleMax : maxAmount;
-  const effectiveMin = methodSingleMin !== undefined && methodSingleMin > 0 ? Math.max(methodSingleMin, minAmount) : minAmount;
+  const effectiveMin =
+    methodSingleMin !== undefined && methodSingleMin > 0 ? Math.max(methodSingleMin, minAmount) : minAmount;
   const feeRate = methodLimits?.[effectivePaymentType]?.feeRate ?? 0;
   const feeAmount = feeRate > 0 && selectedAmount > 0 ? Math.ceil(((selectedAmount * feeRate) / 100) * 100) / 100 : 0;
   const payAmount =
