@@ -374,7 +374,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
     const strategyConfig = await getSystemConfig('LOAD_BALANCE_STRATEGY');
     const strategy = (strategyConfig === 'least-amount' ? 'least-amount' : 'round-robin') as LoadBalanceStrategy;
 
-    const instanceResult = await selectInstance(provider.providerKey, strategy, input.paymentType);
+    const instanceResult = await selectInstance(provider.providerKey, strategy, input.paymentType, input.amount);
     if (instanceResult) {
       if (provider.providerKey === 'easypay') {
         const { EasyPayProvider } = await import('@/lib/easy-pay/provider');

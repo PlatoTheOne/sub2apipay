@@ -196,7 +196,8 @@ const PROVIDER_CONFIG_FIELDS: Record<string, ConfigFieldDef[]> = {
 
 interface ChannelLimits {
   dailyLimit?: number;
-  singleLimit?: number;
+  singleMin?: number;
+  singleMax?: number;
 }
 
 interface ProviderInstanceData {
@@ -1247,7 +1248,7 @@ function PaymentConfigContent() {
                     ▶
                   </span>
                   {locale === 'en' ? 'Limits' : '限额配置'}
-                  {Object.values(instanceForm.limits).some((l) => l.dailyLimit || l.singleLimit) && (
+                  {Object.values(instanceForm.limits).some((l) => l.dailyLimit || l.singleMin || l.singleMax) && (
                     <span
                       className={`text-[10px] px-1.5 py-0.5 rounded ${isDark ? 'bg-amber-500/15 text-amber-300' : 'bg-amber-50 text-amber-700'}`}
                     >
@@ -1259,8 +1260,8 @@ function PaymentConfigContent() {
                   <div className="mt-2 space-y-3">
                     <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                       {locale === 'en'
-                        ? 'Set per-channel daily and single transaction limits. Leave empty for unlimited.'
-                        : '设置每个渠道的日限额和单笔限额，留空为不限。'}
+                        ? 'Set per-channel transaction limits. Leave empty for unlimited.'
+                        : '设置每个渠道的单笔和日限额，留空为不限。'}
                     </p>
                     {(PROVIDER_SUPPORTED_TYPES[instanceForm.providerKey] || []).map((type) => (
                       <div
@@ -1270,10 +1271,54 @@ function PaymentConfigContent() {
                         <div className={`text-xs font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                           {PAYMENT_TYPE_LABELS[type]?.[locale] || type}
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-3 gap-3">
                           <div>
                             <label className={`block text-xs mb-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                              {locale === 'en' ? 'Daily Limit' : '日限额'}
+                              {locale === 'en' ? 'Single Min' : '单笔最小'}
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={instanceForm.limits[type]?.singleMin ?? ''}
+                              onChange={(e) => {
+                                const val = e.target.value ? Number(e.target.value) : undefined;
+                                setInstanceForm((p) => ({
+                                  ...p,
+                                  limits: {
+                                    ...p.limits,
+                                    [type]: { ...p.limits[type], singleMin: val },
+                                  },
+                                }));
+                              }}
+                              className={inputCls}
+                              placeholder={locale === 'en' ? 'Unlimited' : '不限'}
+                            />
+                          </div>
+                          <div>
+                            <label className={`block text-xs mb-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                              {locale === 'en' ? 'Single Max' : '单笔最大'}
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={instanceForm.limits[type]?.singleMax ?? ''}
+                              onChange={(e) => {
+                                const val = e.target.value ? Number(e.target.value) : undefined;
+                                setInstanceForm((p) => ({
+                                  ...p,
+                                  limits: {
+                                    ...p.limits,
+                                    [type]: { ...p.limits[type], singleMax: val },
+                                  },
+                                }));
+                              }}
+                              className={inputCls}
+                              placeholder={locale === 'en' ? 'Unlimited' : '不限'}
+                            />
+                          </div>
+                          <div>
+                            <label className={`block text-xs mb-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                              {locale === 'en' ? 'Daily Limit' : '每日总限额'}
                             </label>
                             <input
                               type="number"
@@ -1286,28 +1331,6 @@ function PaymentConfigContent() {
                                   limits: {
                                     ...p.limits,
                                     [type]: { ...p.limits[type], dailyLimit: val },
-                                  },
-                                }));
-                              }}
-                              className={inputCls}
-                              placeholder={locale === 'en' ? 'Unlimited' : '不限'}
-                            />
-                          </div>
-                          <div>
-                            <label className={`block text-xs mb-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                              {locale === 'en' ? 'Single Limit' : '单笔限额'}
-                            </label>
-                            <input
-                              type="number"
-                              min="0"
-                              value={instanceForm.limits[type]?.singleLimit ?? ''}
-                              onChange={(e) => {
-                                const val = e.target.value ? Number(e.target.value) : undefined;
-                                setInstanceForm((p) => ({
-                                  ...p,
-                                  limits: {
-                                    ...p.limits,
-                                    [type]: { ...p.limits[type], singleLimit: val },
                                   },
                                 }));
                               }}

@@ -10,7 +10,8 @@ export type LoadBalanceStrategy = 'round-robin' | 'least-amount';
 interface InstanceLimits {
   [paymentType: string]: {
     dailyLimit?: number;
-    singleLimit?: number;
+    singleMin?: number;
+    singleMax?: number;
   };
 }
 
@@ -80,6 +81,7 @@ export async function selectInstance(
   providerKey: string,
   strategy: LoadBalanceStrategy = 'round-robin',
   paymentType?: string,
+  amount?: number,
 ): Promise<{ instanceId: string; config: Record<string, string> } | null> {
   const allInstances = await prisma.paymentProviderInstance.findMany({
     where: { providerKey, enabled: true },
@@ -104,6 +106,18 @@ export async function selectInstance(
     if (blocked.size > 0) {
       instances = instances.filter((inst) => !blocked.has(inst.id));
     }
+  }
+
+  // Filter by per-instance single amount limits (singleMin / singleMax)
+  if (paymentType && amount !== undefined && instances.length > 0) {
+    instances = instances.filter((inst) => {
+      const limits = parseInstanceLimits(inst.limits);
+      const channelLimits = limits?.[paymentType];
+      if (!channelLimits) return true;
+      if (channelLimits.singleMin && amount < channelLimits.singleMin) return false;
+      if (channelLimits.singleMax && amount > channelLimits.singleMax) return false;
+      return true;
+    });
   }
 
   if (instances.length === 0) return null;
