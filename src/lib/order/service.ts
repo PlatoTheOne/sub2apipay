@@ -249,6 +249,12 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
     ? parseInt(maxPendingConfig, 10) || DEFAULT_MAX_PENDING_ORDERS
     : DEFAULT_MAX_PENDING_ORDERS;
 
+  // 每日充值限额配置（参考 /api/user 覆盖模式：getSystemConfig → env 兜底）
+  const dailyLimitConfig = await getSystemConfig('DAILY_RECHARGE_LIMIT');
+  const maxDailyRechargeAmount = dailyLimitConfig
+    ? parseFloat(dailyLimitConfig) || env.MAX_DAILY_RECHARGE_AMOUNT
+    : env.MAX_DAILY_RECHARGE_AMOUNT;
+
   // 将限额校验与订单创建放在同一个 serializable 事务中，防止并发突破限额
   const order = await prisma.$transaction(async (tx) => {
     // 待支付订单数限制
@@ -268,7 +274,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
     }
 
     // 每日累计充值限额校验（0 = 不限制）
-    if (env.MAX_DAILY_RECHARGE_AMOUNT > 0) {
+    if (maxDailyRechargeAmount > 0) {
       const dailyAgg = await tx.order.aggregate({
         where: {
           userId: input.userId,
@@ -278,8 +284,8 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
         _sum: { amount: true },
       });
       const alreadyPaid = Number(dailyAgg._sum.amount ?? 0);
-      if (alreadyPaid + input.amount > env.MAX_DAILY_RECHARGE_AMOUNT) {
-        const remaining = Math.max(0, env.MAX_DAILY_RECHARGE_AMOUNT - alreadyPaid);
+      if (alreadyPaid + input.amount > maxDailyRechargeAmount) {
+        const remaining = Math.max(0, maxDailyRechargeAmount - alreadyPaid);
         throw new OrderError(
           'DAILY_LIMIT_EXCEEDED',
           message(
@@ -293,7 +299,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
     }
 
     // 渠道每日全平台限额校验（0 = 不限）
-    const methodDailyLimit = getMethodDailyLimit(input.paymentType);
+    const methodDailyLimit = await getMethodDailyLimit(input.paymentType);
     if (methodDailyLimit > 0) {
       const methodAgg = await tx.order.aggregate({
         where: {

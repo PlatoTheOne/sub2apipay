@@ -1,43 +1,51 @@
 import { prisma } from '@/lib/db';
-import { getEnv } from '@/lib/config';
 import { ORDER_STATUS } from '@/lib/constants';
 import { initPaymentProviders, paymentRegistry } from '@/lib/payment';
 import { getMethodFeeRate } from './fee';
 import { getBizDayStartUTC } from '@/lib/time/biz-day';
+import { getSystemConfig } from '@/lib/system-config';
 
 /**
  * 获取指定支付渠道的每日全平台限额（0 = 不限制）。
- * 优先级：环境变量显式配置 > provider 默认值 > process.env 兜底 > 0
+ * 覆盖模式同 /api/user：getSystemConfig（DB → process.env） → provider 默认值。
+ * 当 OVERRIDE_ENV_ENABLED=true 且无显式渠道配置时，跳过 provider 默认值。
  */
-export function getMethodDailyLimit(paymentType: string): number {
-  const env = getEnv();
-  const key = `MAX_DAILY_AMOUNT_${paymentType.toUpperCase()}` as keyof typeof env;
-  const val = env[key];
-  if (typeof val === 'number') return val;
+export async function getMethodDailyLimit(paymentType: string): Promise<number> {
+  const configVal = await getSystemConfig(`MAX_DAILY_AMOUNT_${paymentType.toUpperCase()}`);
+  if (configVal !== undefined) {
+    const num = Number(configVal);
+    if (Number.isFinite(num) && num >= 0) return num;
+  }
 
+  // 开启了在线配置覆盖 → 跳过 provider 硬编码默认值，使用全局限额
+  const overrideEnabled = await getSystemConfig('OVERRIDE_ENV_ENABLED');
+  if (overrideEnabled === 'true') return 0;
+
+  // Provider 默认值（未开启在线配置时兜底）
   initPaymentProviders();
   const providerDefault = paymentRegistry.getDefaultLimit(paymentType);
   if (providerDefault?.dailyMax !== undefined) return providerDefault.dailyMax;
 
-  const raw = process.env[`MAX_DAILY_AMOUNT_${paymentType.toUpperCase()}`];
-  if (raw !== undefined) {
-    const num = Number(raw);
-    return Number.isFinite(num) && num >= 0 ? num : 0;
-  }
   return 0;
 }
 
 /**
  * 获取指定支付渠道的单笔限额（0 = 使用全局 MAX_RECHARGE_AMOUNT）。
- * 优先级：process.env MAX_SINGLE_AMOUNT_* > provider 默认值 > 0
+ * 覆盖模式同 /api/user：getSystemConfig（DB → process.env） → provider 默认值。
+ * 当 OVERRIDE_ENV_ENABLED=true 且无显式渠道配置时，跳过 provider 默认值。
  */
-export function getMethodSingleLimit(paymentType: string): number {
-  const raw = process.env[`MAX_SINGLE_AMOUNT_${paymentType.toUpperCase()}`];
-  if (raw !== undefined) {
-    const num = Number(raw);
+export async function getMethodSingleLimit(paymentType: string): Promise<number> {
+  const configVal = await getSystemConfig(`MAX_SINGLE_AMOUNT_${paymentType.toUpperCase()}`);
+  if (configVal !== undefined) {
+    const num = Number(configVal);
     if (Number.isFinite(num) && num >= 0) return num;
   }
 
+  // 开启了在线配置覆盖 → 跳过 provider 硬编码默认值，使用全局限额
+  const overrideEnabled = await getSystemConfig('OVERRIDE_ENV_ENABLED');
+  if (overrideEnabled === 'true') return 0;
+
+  // Provider 默认值（未开启在线配置时兜底）
   initPaymentProviders();
   const providerDefault = paymentRegistry.getDefaultLimit(paymentType);
   if (providerDefault?.singleMax !== undefined) return providerDefault.singleMax;
@@ -225,8 +233,8 @@ export async function queryMethodLimits(paymentTypes: string[]): Promise<Record<
 
   const result: Record<string, MethodLimitStatus> = {};
   for (const type of paymentTypes) {
-    const globalDailyLimit = getMethodDailyLimit(type);
-    const globalSingleMax = getMethodSingleLimit(type);
+    const globalDailyLimit = await getMethodDailyLimit(type);
+    const globalSingleMax = await getMethodSingleLimit(type);
     const feeRate = getMethodFeeRate(type);
     const used = usageMap[type] ?? 0;
     const remaining = globalDailyLimit > 0 ? Math.max(0, globalDailyLimit - used) : null;

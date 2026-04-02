@@ -6,6 +6,7 @@ import { paymentRegistry } from '@/lib/payment';
 import { getEnabledPaymentTypes } from '@/lib/payment/resolve-enabled-types';
 import { getCurrentUserByToken } from '@/lib/sub2api/client';
 import { handleApiError } from '@/lib/utils/api';
+import { getSystemConfigs } from '@/lib/system-config';
 
 const createOrderSchema = z.object({
   token: z.string().min(1),
@@ -52,9 +53,17 @@ export async function POST(request: NextRequest) {
 
     // 订阅订单跳过金额范围校验（价格由服务端套餐决定）
     if (order_type !== 'subscription') {
-      if (amount < env.MIN_RECHARGE_AMOUNT || amount > env.MAX_RECHARGE_AMOUNT) {
+      // 优先读 DB 配置（管理后台在线配置），回退到环境变量
+      const amountConfigs = await getSystemConfigs(['RECHARGE_MIN_AMOUNT', 'RECHARGE_MAX_AMOUNT']);
+      const effectiveMin = amountConfigs['RECHARGE_MIN_AMOUNT']
+        ? parseFloat(amountConfigs['RECHARGE_MIN_AMOUNT']) || env.MIN_RECHARGE_AMOUNT
+        : env.MIN_RECHARGE_AMOUNT;
+      const effectiveMax = amountConfigs['RECHARGE_MAX_AMOUNT']
+        ? parseFloat(amountConfigs['RECHARGE_MAX_AMOUNT']) || env.MAX_RECHARGE_AMOUNT
+        : env.MAX_RECHARGE_AMOUNT;
+      if (amount < effectiveMin || amount > effectiveMax) {
         return NextResponse.json(
-          { error: `充值金额需在 ${env.MIN_RECHARGE_AMOUNT} - ${env.MAX_RECHARGE_AMOUNT} 之间` },
+          { error: `充值金额需在 ${effectiveMin} - ${effectiveMax} 之间` },
           { status: 400 },
         );
       }
