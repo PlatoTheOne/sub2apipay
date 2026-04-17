@@ -11,8 +11,11 @@ import { resolveEnabledPaymentTypes } from '@/lib/payment/resolve-enabled-types'
 export async function GET(request: NextRequest) {
   const locale = resolveLocale(request.nextUrl.searchParams.get('lang'));
   const userId = Number(request.nextUrl.searchParams.get('user_id'));
-  if (!userId || isNaN(userId) || userId <= 0) {
-    return NextResponse.json({ error: locale === 'en' ? 'Invalid user ID' : '无效的用户 ID' }, { status: 400 });
+  if (!userId || Number.isNaN(userId) || userId <= 0) {
+    return NextResponse.json(
+      { error: locale === 'en' ? 'Invalid user ID' : '无效的用户 ID' },
+      { status: 400 },
+    );
   }
 
   const token = request.nextUrl.searchParams.get('token')?.trim();
@@ -23,64 +26,47 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  let tokenUser;
   try {
-    // 验证 token 并确保请求的 user_id 与 token 对应的用户匹配
-    let tokenUser;
-    try {
-      tokenUser = await getCurrentUserByToken(token);
-    } catch {
-      return NextResponse.json({ error: locale === 'en' ? 'Invalid token' : '无效的 token' }, { status: 401 });
-    }
+    tokenUser = await getCurrentUserByToken(token);
+  } catch {
+    return NextResponse.json(
+      { error: locale === 'en' ? 'Invalid token' : '无效的 token' },
+      { status: 401 },
+    );
+  }
 
-    if (tokenUser.id !== userId) {
-      return NextResponse.json(
-        { error: locale === 'en' ? 'Forbidden to access this user' : '无权访问该用户信息' },
-        { status: 403 },
-      );
-    }
+  if (tokenUser.id !== userId) {
+    return NextResponse.json(
+      { error: locale === 'en' ? 'Forbidden to access this user' : '无权访问该用户信息' },
+      { status: 403 },
+    );
+  }
 
+  try {
     const env = getEnv();
     initPaymentProviders();
     const supportedTypes = paymentRegistry.getSupportedTypes();
 
-    // getUser 与 config 查询并行；config 完成后立即启动 queryMethodLimits
-    const configPromise = Promise.all([
-      getSystemConfig('ENABLED_PAYMENT_TYPES'),
-      getSystemConfig('BALANCE_PAYMENT_DISABLED'),
-      getSystemConfig('MAX_PENDING_ORDERS'),
-      getSystemConfig('RECHARGE_MIN_AMOUNT'),
-      getSystemConfig('RECHARGE_MAX_AMOUNT'),
-      getSystemConfig('DAILY_RECHARGE_LIMIT'),
-    ]).then(
-      async ([
-        configuredPaymentTypesRaw,
-        balanceDisabledVal,
-        maxPendingVal,
-        minAmountVal,
-        maxAmountVal,
-        dailyLimitVal,
-      ]) => {
-        const enabledTypes = resolveEnabledPaymentTypes(supportedTypes, configuredPaymentTypesRaw);
-        const methodLimits = await queryMethodLimits(enabledTypes);
-        return {
-          enabledTypes,
-          methodLimits,
-          balanceDisabled: balanceDisabledVal === 'true',
-          maxPendingOrders: maxPendingVal ? parseInt(maxPendingVal, 10) || 3 : 3,
-          minAmount: minAmountVal ? parseFloat(minAmountVal) || env.MIN_RECHARGE_AMOUNT : env.MIN_RECHARGE_AMOUNT,
-          maxAmount: maxAmountVal ? parseFloat(maxAmountVal) || env.MAX_RECHARGE_AMOUNT : env.MAX_RECHARGE_AMOUNT,
-          maxDailyAmount: dailyLimitVal ? parseFloat(dailyLimitVal) : env.MAX_DAILY_RECHARGE_AMOUNT,
-        };
-      },
-    );
+    const [configuredPaymentTypesRaw, balanceDisabledVal, maxPendingVal, minAmountVal, maxAmountVal, dailyLimitVal] =
+      await Promise.all([
+        getSystemConfig('ENABLED_PAYMENT_TYPES'),
+        getSystemConfig('BALANCE_PAYMENT_DISABLED'),
+        getSystemConfig('MAX_PENDING_ORDERS'),
+        getSystemConfig('RECHARGE_MIN_AMOUNT'),
+        getSystemConfig('RECHARGE_MAX_AMOUNT'),
+        getSystemConfig('DAILY_RECHARGE_LIMIT'),
+      ]);
 
-    const { enabledTypes, methodLimits, balanceDisabled, maxPendingOrders, minAmount, maxAmount, maxDailyAmount } =
-      await configPromise;
+    const enabledTypes = resolveEnabledPaymentTypes(supportedTypes, configuredPaymentTypesRaw);
+    const methodLimits = await queryMethodLimits(enabledTypes);
+    const balanceDisabled = balanceDisabledVal === 'true';
+    const maxPendingOrders = maxPendingVal ? parseInt(maxPendingVal, 10) || 3 : 3;
+    const minAmount = minAmountVal ? parseFloat(minAmountVal) || env.MIN_RECHARGE_AMOUNT : env.MIN_RECHARGE_AMOUNT;
+    const maxAmount = maxAmountVal ? parseFloat(maxAmountVal) || env.MAX_RECHARGE_AMOUNT : env.MAX_RECHARGE_AMOUNT;
+    const maxDailyAmount = dailyLimitVal ? parseFloat(dailyLimitVal) : env.MAX_DAILY_RECHARGE_AMOUNT;
 
-    // 收集 sublabel 覆盖
     const sublabelOverrides: Record<string, string> = {};
-
-    // 1. 检测同 label 冲突：多个启用渠道有相同的显示名，自动标记默认 sublabel（provider 名）
     const labelCount = new Map<string, string[]>();
     for (const type of enabledTypes) {
       const { channel } = getPaymentDisplayInfo(type, locale);
@@ -88,16 +74,15 @@ export async function GET(request: NextRequest) {
       types.push(type);
       labelCount.set(channel, types);
     }
+
     for (const [, types] of labelCount) {
-      if (types.length > 1) {
-        for (const type of types) {
-          const { provider } = getPaymentDisplayInfo(type, locale);
-          if (provider) sublabelOverrides[type] = provider;
-        }
+      if (types.length <= 1) continue;
+      for (const type of types) {
+        const { provider } = getPaymentDisplayInfo(type, locale);
+        if (provider) sublabelOverrides[type] = provider;
       }
     }
 
-    // 2. 用户手动配置的 PAYMENT_SUBLABEL_* 优先级最高，覆盖自动生成的
     if (env.PAYMENT_SUBLABEL_ALIPAY) sublabelOverrides.alipay = env.PAYMENT_SUBLABEL_ALIPAY;
     if (env.PAYMENT_SUBLABEL_ALIPAY_DIRECT) sublabelOverrides.alipay_direct = env.PAYMENT_SUBLABEL_ALIPAY_DIRECT;
     if (env.PAYMENT_SUBLABEL_WXPAY) sublabelOverrides.wxpay = env.PAYMENT_SUBLABEL_WXPAY;
@@ -129,6 +114,7 @@ export async function GET(request: NextRequest) {
     if (message === 'USER_NOT_FOUND') {
       return NextResponse.json({ error: locale === 'en' ? 'User not found' : '用户不存在' }, { status: 404 });
     }
+
     console.error('Get user error:', error);
     return NextResponse.json(
       { error: locale === 'en' ? 'Failed to fetch user info' : '获取用户信息失败' },

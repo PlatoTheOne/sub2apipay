@@ -58,6 +58,7 @@ export default function PaymentQRCode({
   const [expired, setExpired] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [imageLoading, setImageLoading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [cancelBlocked, setCancelBlocked] = useState(false);
   const [redirected, setRedirected] = useState(false);
 
@@ -79,6 +80,7 @@ export default function PaymentQRCode({
     scanPay: locale === 'en' ? 'Please scan with your payment app' : '请使用支付应用扫码支付',
     back: locale === 'en' ? 'Back' : '返回',
     cancelOrder: locale === 'en' ? 'Cancel Order' : '取消订单',
+    cancelling: locale === 'en' ? 'Cancelling...' : '正在取消...',
     h5Hint:
       locale === 'en'
         ? 'After payment, please return to this page. The system will confirm automatically.'
@@ -347,7 +349,8 @@ export default function PaymentQRCode({
   }, [pollStatus, expired]);
 
   const handleCancel = async () => {
-    if (!token) return;
+    if (!token || cancelling) return;
+    setCancelling(true);
     try {
       const res = await fetch(buildOrderStatusUrl(orderId, statusAccessToken));
       if (!res.ok) return;
@@ -381,6 +384,9 @@ export default function PaymentQRCode({
         await pollStatus();
       }
     } catch {}
+    finally {
+      setCancelling(false);
+    }
   };
 
   const meta = getPaymentMeta(paymentType || 'alipay');
@@ -602,12 +608,13 @@ export default function PaymentQRCode({
         {!expired && token && (
           <button
             onClick={handleCancel}
+            disabled={cancelling}
             className={[
-              'flex-1 rounded-lg border py-2 text-sm',
+              'flex-1 rounded-lg border py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60',
               dark ? 'border-red-700 text-red-400 hover:bg-red-900/30' : 'border-red-300 text-red-600 hover:bg-red-50',
             ].join(' ')}
           >
-            {t.cancelOrder}
+            {cancelling ? t.cancelling : t.cancelOrder}
           </button>
         )}
       </div>

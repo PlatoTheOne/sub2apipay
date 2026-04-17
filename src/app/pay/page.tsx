@@ -63,6 +63,7 @@ function PayContent() {
   const [step, setStep] = useState<'form' | 'paying' | 'result'>('form');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [dataLoadError, setDataLoadError] = useState('');
   const [subscriptionError, setSubscriptionError] = useState('');
   const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
   const [finalOrderState, setFinalOrderState] = useState<PublicOrderStatusSnapshot | null>(null);
@@ -162,6 +163,7 @@ function PayContent() {
 
   const loadUserAndOrders = useCallback(async () => {
     if (!token) return;
+    setUserLoaded(false);
     setUserNotFound(false);
     try {
       const meRes = await fetch(`/api/orders/my?token=${encodeURIComponent(token)}`);
@@ -220,8 +222,11 @@ function PayContent() {
             applySublabelOverrides(cfgData.config.sublabelOverrides);
           }
         }
+      } else {
+        setDataLoadError('Failed to load payment config. Please refresh.');
       }
     } catch {
+      setDataLoadError('Failed to load user data. Please refresh.');
     } finally {
       setUserLoaded(true);
     }
@@ -230,6 +235,7 @@ function PayContent() {
   // 加载渠道和订阅套餐
   const loadChannelsAndPlans = useCallback(async () => {
     if (!token) return;
+    setChannelsLoaded(false);
     try {
       const [chRes, plRes, subRes] = await Promise.all([
         fetch(`/api/channels?token=${encodeURIComponent(token)}`),
@@ -237,23 +243,42 @@ function PayContent() {
         fetch(`/api/subscriptions/my?token=${encodeURIComponent(token)}`),
       ]);
 
+      const partialErrors: string[] = [];
+
       if (chRes.ok) {
         const chData = await chRes.json();
         setChannels(chData.channels ?? []);
+      } else {
+        partialErrors.push('Failed to load payment channels');
       }
       if (plRes.ok) {
         const plData = await plRes.json();
         setPlans(plData.plans ?? []);
+      } else {
+        partialErrors.push('Failed to load subscription plans');
       }
       if (subRes.ok) {
         const subData = await subRes.json();
         setUserSubscriptions(subData.subscriptions ?? []);
+      } else {
+        partialErrors.push('Failed to load user subscriptions');
+      }
+
+      if (partialErrors.length > 0) {
+        setDataLoadError(partialErrors.join(' / '));
       }
     } catch {
+      setDataLoadError('Failed to load page data. Please refresh.');
     } finally {
       setChannelsLoaded(true);
     }
   }, [token]);
+
+  const refreshAll = useCallback(() => {
+    setDataLoadError('');
+    void loadUserAndOrders();
+    void loadChannelsAndPlans();
+  }, [loadUserAndOrders, loadChannelsAndPlans]);
 
   const loadMoreOrders = async () => {
     if (!token || ordersLoadingMore || !ordersHasMore) return;
@@ -277,14 +302,12 @@ function PayContent() {
   };
 
   useEffect(() => {
-    loadUserAndOrders();
-    loadChannelsAndPlans();
-  }, [loadUserAndOrders, loadChannelsAndPlans]);
+    refreshAll();
+  }, [refreshAll]);
 
   useEffect(() => {
     if (step !== 'result' || finalOrderState?.status !== 'COMPLETED') return;
-    loadUserAndOrders();
-    loadChannelsAndPlans();
+    refreshAll();
     const timer = setTimeout(() => {
       setStep('form');
       setOrderResult(null);
@@ -295,7 +318,7 @@ function PayContent() {
       setRenewGroupId(null);
     }, 2200);
     return () => clearTimeout(timer);
-  }, [step, finalOrderState, loadUserAndOrders, loadChannelsAndPlans]);
+  }, [step, finalOrderState, refreshAll]);
 
   // 检查订单完成后是否是订阅分组消失的情况
   useEffect(() => {
@@ -519,6 +542,7 @@ function PayContent() {
   };
 
   const handleBack = () => {
+    refreshAll();
     setStep('form');
     setOrderResult(null);
     setFinalOrderState(null);
@@ -554,10 +578,7 @@ function PayContent() {
           <>
             <button
               type="button"
-              onClick={() => {
-                loadUserAndOrders();
-                loadChannelsAndPlans();
-              }}
+              onClick={refreshAll}
               className={[
                 'inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
                 isDark
@@ -608,6 +629,17 @@ function PayContent() {
           ].join(' ')}
         >
           {error}
+        </div>
+      )}
+
+      {dataLoadError && step === 'form' && (
+        <div
+          className={[
+            'mb-4 rounded-lg border p-3 text-sm',
+            isDark ? 'border-amber-700 bg-amber-900/25 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700',
+          ].join(' ')}
+        >
+          {dataLoadError}
         </div>
       )}
 
@@ -853,15 +885,33 @@ function PayContent() {
                       </button>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {(renewGroupId !== null ? plans.filter((p) => p.groupId === renewGroupId) : plans).map((plan) => (
-                        <SubscriptionPlanCard
-                          key={plan.id}
-                          plan={plan}
-                          onSubscribe={() => setSelectedPlan(plan)}
-                          isDark={isDark}
-                          locale={locale}
-                        />
-                      ))}
+                      {(() => {
+                        const visiblePlans = renewGroupId !== null ? plans.filter((p) => p.groupId === renewGroupId) : plans;
+                        if (visiblePlans.length === 0) {
+                          return (
+                            <div
+                              className={[
+                                'col-span-full rounded-2xl border p-8 text-center text-sm',
+                                isDark
+                                  ? 'border-slate-700 bg-slate-800/70 text-slate-300'
+                                  : 'border-slate-200 bg-slate-50 text-slate-600',
+                              ].join(' ')}
+                            >
+                              No purchasable plans right now. Please refresh and try again.
+                            </div>
+                          );
+                        }
+
+                        return visiblePlans.map((plan) => (
+                          <SubscriptionPlanCard
+                            key={plan.id}
+                            plan={plan}
+                            onSubscribe={() => setSelectedPlan(plan)}
+                            isDark={isDark}
+                            locale={locale}
+                          />
+                        ));
+                      })()}
                     </div>
 
                     {renderHelpSection()}
